@@ -1,7 +1,7 @@
-<svg id="full-body" x="0px" y="0px" viewBox="0 0 190 345" xml:space="preserve" xmlns="http://www.w3.org/2000/svg"
+<svg id="front-full-body" x="0px" y="0px" viewBox="0 0 190 345" xml:space="preserve" xmlns="http://www.w3.org/2000/svg"
     xmlns:xlink="http://www.w3.org/1999/xlink" style="height: auto; width: 600px;">
     <image
-        xlink:href="https://img.webmd.com/vim/live/webmd/consumer_assets/site_images/symptom_checker_beta/assets/front-m.png"
+        xlink:href="front-full-body.png"
         height="100%" width="100%" x="0" y="0" class="body-bg-img"></image>
     <path class="layers" fill="#83B7D6" fill-rule="nonzero"
         d="M98.626 35.367c-2.955-9.235-7.495-17.629-14.908-23.78C72.474 2.256 59.28-1.644 44.648.636 35.374 2.082 26.715 5.375 19.72 11.783 11.668 19.158 6.678 28.498 4.07 39.08.817 52.292.365 65.728 1.084 79.236c.054 1.029-.03 1.827-.527 2.475.035.028.067.059.101.088.055-.02.11-.036.165-.06.132-.06.259-.127.383-.199.05-.238.246-.427.53-.359 1.678-1.295 2.621-3.691 3.276-5.555C6.797 70.54 7.33 65.144 8.235 59.863c1.014-5.922 1.69-12.016 4.329-17.498 2.459-5.11 6.646-8.69 11.908-10.722 6.72-2.593 14.481-3.237 21.625-3.583 7.08-.344 14.265.027 21.178 1.674 13.452 3.206 24.266 11.815 28.795 25.1 2.148 6.299 3.27 13.44 7.045 19.061.175-13.008-.458-25.928-4.49-38.528"
