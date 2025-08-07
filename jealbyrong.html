@@ -171,37 +171,6 @@
             border-left: 5px solid #ffeeba;
         }
 
-        #body-image-container {
-            position: relative;
-            max-width: 300px;
-            /* 이미지 크기 조절 */
-            margin: 20px auto;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            overflow: hidden;
-        }
-
-        #body-svg {
-            width: 100%;
-            height: auto;
-            transition: all 0.5s ease-in-out;
-        }
-
-        .clickable-group,
-        .clickable-part {
-            fill: rgba(0, 123, 255, 0.01);
-            /* 기본적으로 거의 투명 */
-            stroke: rgba(0, 123, 255, 0.5);
-            stroke-width: 8px;
-            transition: fill 0.2s ease-in-out;
-            cursor: pointer;
-        }
-
-        .clickable-group:hover,
-        .clickable-part:hover {
-            fill: var(--hover-color);
-        }
-
         /* CSS 코드 끝 */
     </style>
 </head>
@@ -442,6 +411,52 @@
         });
         // JavaScript 코드 끝
     </script>
+    <script>
+    // 페이지의 모든 내용이 로드된 후 스크립트 실행
+    window.addEventListener('load', () => {
+
+        const bodyObject = document.getElementById('full-body-svg');
+        const backButton = document.getElementById('back-to-simple-view');
+
+        const simpleSvgFile = 'front-full-body.svg'; // 단순 지도 파일
+        const detailedSvgFile = 'front-fulld-body.svg'; // 상세 지도 파일
+
+        // SVG 파일이 <object> 태그 안으로 완전히 로드되었을 때를 기다리는 함수
+        function setupSvgEventListeners() {
+            // SVG 내부의 문서에 접근
+            const svgDoc = bodyObject.contentDocument;
+            if (!svgDoc) {
+                console.error("SVG 문서를 찾을 수 없습니다.");
+                return;
+            }
+
+            // 클릭 가능한 모든 그룹과 개별 부위 선택
+            const clickTargets = svgDoc.querySelectorAll('.arms, .legs, .head, .torso'); // 예시 클래스명
+
+            clickTargets.forEach(target => {
+                target.addEventListener('click', () => {
+                    // object가 불러오는 파일을 상세 지도(d가 붙은 파일)로 변경
+                    bodyObject.data = detailedSvgFile;
+                    
+                    // '뒤로 가기' 버튼을 보여줌
+                    backButton.classList.remove('hidden');
+                });
+            });
+        }
+
+        // <object> 태그에 SVG 파일이 로드될 때마다 이벤트를 다시 설정
+        bodyObject.addEventListener('load', setupSvgEventListeners);
+
+        // '뒤로 가기' 버튼을 클릭했을 때의 동작
+        backButton.addEventListener('click', () => {
+            // object가 불러오는 파일을 다시 단순 지도 파일로 변경
+            bodyObject.data = simpleSvgFile;
+
+            // '뒤로 가기' 버튼을 다시 숨김
+            backButton.classList.add('hidden');
+        });
+    });
+</script>
 </body>
 
 </html>
