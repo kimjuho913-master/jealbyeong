@@ -2,1015 +2,1090 @@
 <html lang="ko">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>나의 아픈 곳은? - AI 건강 가이드</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>나의 아픈 곳은? - AI 건강 가이드</title>
 
-    <style>
-        /* Google Noto Sans KR 폰트 가져오기 */
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap');
+  <style>
+    /* Google Noto Sans KR 폰트 가져오기 */
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap');
 
-        /* CSS 변수 설정 (색상 팔레트) */
-        :root {
-            --primary-color: #007bff;
-            --light-gray: #f8f9fa;
-            --dark-gray: #343a40;
-            --border-color: #dee2e6;
-            --selected-color: #007bff;
-        }
+    /* CSS 변수 설정 (색상 팔레트) */
+    :root {
+      --primary-color: #007bff;
+      --light-gray: #f8f9fa;
+      --dark-gray: #343a40;
+      --border-color: #dee2e6;
+      --selected-color: #007bff;
+    }
 
-        /* 기본 바디 및 레이아웃 스타일 */
-        body {
-            font-family: 'Noto Sans KR', sans-serif;
-            background-color: var(--light-gray);
-            color: var(--dark-gray);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            padding: 1rem;
-            box-sizing: border-box;
-            overflow: hidden;
-        }
+    /* 기본 바디 및 레이아웃 스타일 */
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      background-color: var(--light-gray);
+      color: var(--dark-gray);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 1rem;
+      box-sizing: border-box;
+      overflow: hidden;
+    }
 
-        /* 이름표(툴팁) 스타일 */
-        #body-part-tooltip {
-            position: absolute;
-            display: none;
-            background-color: rgba(0, 0, 0, 0.75);
-            color: white;
-            padding: 5px 12px;
-            border-radius: 6px;
-            font-size: 0.9rem;
-            z-index: 1000;
-            pointer-events: none;
-            white-space: nowrap;
-            transform: translate(20px, -50%);
-        }
+    /* 이름표(툴팁) 스타일 */
+    #body-part-tooltip {
+      position: absolute;
+      display: none;
+      background-color: rgba(0, 0, 0, 0.75);
+      color: white;
+      padding: 5px 12px;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      z-index: 1000;
+      pointer-events: none;
+      white-space: nowrap;
+      transform: translate(20px, -50%);
+    }
 
-        /* 전체 컨테이너 (2단 레이아웃) */
-        .container {
-            display: flex;
-            gap: 30px;
-            background-color: white;
-            padding: 2rem;
-            border-radius: 16px;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-width: 1100px;
-            height: 90vh;
-            max-height: 700px;
-        }
+    /* 전체 컨테이너 (2단 레이아웃) */
+    .container {
+      display: flex;
+      gap: 30px;
+      background-color: white;
+      padding: 2rem;
+      border-radius: 16px;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 1100px;
+      height: 90vh;
+      max-height: 700px;
+    }
 
-        /* 왼쪽 패널 (신체 지도) */
-        .left-panel {
-            flex: 1;
-            min-width: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            border-right: 1px solid var(--border-color);
-            padding-right: 30px;
-            transition: opacity 0.3s ease-in-out;
-        }
+    /* 왼쪽 패널 (신체 지도) */
+    .left-panel {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border-right: 1px solid var(--border-color);
+      padding-right: 30px;
+      transition: opacity 0.3s ease-in-out;
+    }
 
-        /* * === ✨ 수정된 부분 START ===
-         * 4단계에서 신체 지도를 비활성화하기 위한 스타일
+    /* * === ✨ 수정된 부분 START ===
+         * 3단계에서 신체 지도를 비활성화하기 위한 스타일
          */
-        .left-panel.disabled {
-            opacity: 0.6;
-            /* pointer-events: none; <-- 이 줄을 삭제하여 스크롤과 버튼 클릭이 가능하게 함 */
-        }
+    .left-panel.disabled {
+      opacity: 0.6;
+      /* pointer-events: none; <-- 이 줄을 삭제하여 스크롤과 버튼 클릭이 가능하게 함 */
+    }
 
-        /* .disabled 상태일 때 SVG의 클릭 가능한 '부위'만 비활성화 */
-        .left-panel.disabled #body-svg .layers {
-            pointer-events: none;
-            cursor: default;
-            /* 마우스 커서를 기본 모양으로 변경 */
-        }
+    /* .disabled 상태일 때 SVG의 클릭 가능한 '부위'만 비활성화 */
+    .left-panel.disabled #body-svg .layers {
+      pointer-events: none;
+      cursor: default;
+      /* 마우스 커서를 기본 모양으로 변경 */
+    }
 
-        /* === ✨ 수정된 부분 END === */
+    /* === ✨ 수정된 부분 END === */
 
-        /* SVG를 감싸는 컨테이너 (레이아웃 문제 해결) */
-        #body-map-container {
-            width: 100%;
-            flex-grow: 1;
-            overflow: auto;
-            min-height: 0;
-        }
+    /* SVG를 감싸는 컨테이너 (레이아웃 문제 해결) */
+    #body-map-container {
+      width: 100%;
+      flex-grow: 1;
+      overflow: auto;
+      min-height: 0;
+    }
 
-        /* SVG 이미지 자체 (레이아웃 문제 해결) */
-        #body-svg {
-            width: auto;
-            height: 100%;
-            max-width: 100%;
-            object-fit: contain;
-            display: block;
-        }
+    /* SVG 이미지 자체 (레이아웃 문제 해결) */
+    #body-svg {
+      width: auto;
+      height: 100%;
+      max-width: 100%;
+      object-fit: contain;
+      display: block;
+    }
 
-        .map-controls {
-            margin-top: 15px;
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-        }
+    .map-controls {
+      margin-top: 15px;
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+    }
 
-        /* 오른쪽 패널 (질문 단계) */
-        .right-panel {
-            flex: 1;
-            min-width: 0;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
+    /* 오른쪽 패널 (질문 단계) */
+    .right-panel {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
 
-        h1,
-        h2,
-        p {
-            margin-block-start: 0;
-            margin-block-end: 0;
-        }
+    h1,
+    h2,
+    p {
+      margin-block-start: 0;
+      margin-block-end: 0;
+    }
 
-        h1 {
-            text-align: center;
-            color: var(--primary-color);
-            margin-bottom: 5px;
-        }
+    h1 {
+      text-align: center;
+      color: var(--primary-color);
+      margin-bottom: 5px;
+    }
 
-        h1 .subtitle {
-            display: block;
-            font-size: 1rem;
-            color: #6c757d;
-            font-weight: 400;
-        }
+    h1 .subtitle {
+      display: block;
+      font-size: 1rem;
+      color: #6c757d;
+      font-weight: 400;
+    }
 
-        h2 {
-            border-bottom: 2px solid var(--primary-color);
-            padding-bottom: 10px;
-            margin-top: 20px;
-            margin-bottom: 20px;
-            font-size: 1.4rem;
-            text-align: left;
-        }
+    h2 {
+      border-bottom: 2px solid var(--primary-color);
+      padding-bottom: 10px;
+      margin-top: 20px;
+      margin-bottom: 20px;
+      font-size: 1.4rem;
+      text-align: left;
+    }
 
-        .disclaimer {
-            background-color: #fff3cd;
-            border: 1px solid #ffeeba;
-            border-radius: 8px;
-            padding: 15px;
-            font-size: 0.9rem;
-            text-align: center;
-            margin-bottom: 30px;
-        }
+    .disclaimer {
+      background-color: #fff3cd;
+      border: 1px solid #ffeeba;
+      border-radius: 8px;
+      padding: 15px;
+      font-size: 0.9rem;
+      text-align: center;
+      margin-bottom: 30px;
+    }
 
-        .options {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-bottom: 20px;
-            justify-content: flex-start;
-        }
+    .options {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 20px;
+      justify-content: flex-start;
+    }
 
-        .btn {
-            padding: 12px 20px;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            background-color: white;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: all 0.2s ease-in-out;
-            font-family: 'Noto Sans KR', sans-serif;
-            min-width: 80px;
-            text-align: center;
-        }
+    .btn {
+      padding: 12px 20px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      background-color: white;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.2s ease-in-out;
+      font-family: 'Noto Sans KR', sans-serif;
+      min-width: 80px;
+      text-align: center;
+    }
 
-        .btn:hover {
-            background-color: #e9ecef;
-            border-color: #adb5bd;
-        }
+    .btn:hover {
+      background-color: #e9ecef;
+      border-color: #adb5bd;
+    }
 
-        .btn.selected {
-            background-color: var(--selected-color);
-            color: white;
-            border-color: var(--selected-color);
-            font-weight: 700;
-        }
+    .btn.selected {
+      background-color: var(--selected-color);
+      color: white;
+      border-color: var(--selected-color);
+      font-weight: 700;
+    }
 
-        .btn-next {
-            /* width: 100%; */
-            background-color: var(--primary-color);
-            color: white;
-            font-weight: 700;
-            font-size: 1.1rem;
-            margin-top: auto;
-            padding: 15px;
-            flex-shrink: 0;
-        }
+    .btn-next {
+      /* width: 100%; */
+      background-color: var(--primary-color);
+      color: white;
+      font-weight: 700;
+      font-size: 1.1rem;
+      margin-top: auto;
+      padding: 15px;
+      flex-shrink: 0;
+    }
 
-        .btn-next:hover {
-            opacity: 0.9;
-            background-color: var(--primary-color);
-        }
+    .btn-next:hover {
+      opacity: 0.9;
+      background-color: var(--primary-color);
+    }
 
-        .button-group {
-            display: flex;
-            gap: 10px;
-            margin-top: auto;
-            /* 버튼 그룹을 항상 아래에 고정 */
-        }
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin-top: auto;
+      /* 버튼 그룹을 항상 아래에 고정 */
+    }
 
-        /* 뒤로가기 버튼 스타일 */
-        .btn-back {
-            background-color: #6c757d;
-            /* 회색 계열 */
-            color: white;
-            flex-grow: 1;
-            /* '뒤로가기' 버튼이 차지할 공간 비율 */
-        }
+    /* 뒤로가기 버튼 스타일 */
+    .btn-back {
+      background-color: #6c757d;
+      /* 회색 계열 */
+      color: white;
+      flex-grow: 1;
+      /* '뒤로가기' 버튼이 차지할 공간 비율 */
+    }
 
-        .btn-back:hover {
-            background-color: #5a6268;
-        }
+    .btn-back:hover {
+      background-color: #5a6268;
+    }
 
-        textarea {
-            width: 100%;
-            height: 200px;
-            padding: 10px;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            font-family: 'Noto Sans KR', sans-serif;
-            font-size: 1rem;
-            resize: vertical;
-            margin-bottom: 20px;
-            flex-shrink: 0;
-            box-sizing: border-box;
-        }
+    textarea {
+      width: 100%;
+      height: 200px;
+      padding: 10px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      font-family: 'Noto Sans KR', sans-serif;
+      font-size: 1rem;
+      resize: vertical;
+      margin-bottom: 20px;
+      flex-shrink: 0;
+      box-sizing: border-box;
+    }
 
-        .hidden {
-            /* !important를 추가하여 다른 스타일에 의해 오버라이드 되는 것을 방지 */
-            display: none !important;
-        }
+    .hidden {
+      /* !important를 추가하여 다른 스타일에 의해 오버라이드 되는 것을 방지 */
+      display: none !important;
+    }
 
-        .result-box {
-            background-color: var(--light-gray);
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
+    .result-box {
+      background-color: var(--light-gray);
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
 
-        /* SVG 부위 색상 변경 효과 */
-        #body-svg .layers {
-            fill: rgba(255, 255, 255, 0);
-            transition: fill 0.5s ease-in-out;
-            cursor: pointer;
-        }
+    /* SVG 부위 색상 변경 효과 */
+    #body-svg .layers {
+      fill: rgba(255, 255, 255, 0);
+      transition: fill 0.5s ease-in-out;
+      cursor: pointer;
+    }
 
-        #body-svg .layers:hover {
-            fill: rgba(0, 123, 255, 0.4);
-        }
+    #body-svg .layers:hover {
+      fill: rgba(0, 123, 255, 0.4);
+    }
 
-        #body-svg .layers.selected-part,
-        #body-svg .layers.selected-part:hover {
-            fill: rgba(211, 50, 50, 0.829);
-        }
+    #body-svg .layers.selected-part,
+    #body-svg .layers.selected-part:hover {
+      fill: rgba(211, 50, 50, 0.829);
+    }
 
-        /* 선택된 부위 목록 스타일 (스크롤 추가) */
-        #selected-parts-display {
-            margin-bottom: 15px;
-            padding: 10px;
-            background-color: #f8f9fa;
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-            flex-shrink: 0;
-            max-height: 80px;
-            overflow-y: auto;
-        }
+    /* 선택된 부위 목록 스타일 (스크롤 추가) */
+    #selected-parts-display {
+      margin-bottom: 15px;
+      padding: 10px;
+      background-color: #f8f9fa;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      flex-shrink: 0;
+      max-height: 80px;
+      overflow-y: auto;
+    }
 
-        .part-tag {
-            display: inline-block;
-            background-color: var(--primary-color);
-            color: white;
-            padding: 5px 10px;
-            border-radius: 15px;
-            margin: 3px;
-            font-size: 0.9rem;
-        }
+    .part-tag {
+      display: inline-block;
+      background-color: var(--primary-color);
+      color: white;
+      padding: 5px 10px;
+      border-radius: 15px;
+      margin: 3px;
+      font-size: 0.9rem;
+    }
 
-        /* 통합된 2단계 섹션의 flex 레이아웃 설정 */
-        #step2_combined {
-            display: flex;
-            flex-direction: column;
-            height: 100%;
-            overflow: hidden;
-        }
+    /* 통합된 2단계 섹션의 flex 레이아웃 설정 */
+    #step2_combined {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      overflow: hidden;
+    }
 
-        /* 증상 선택 영역이 남은 공간을 채우고 스크롤되도록 설정 */
-        #symptom-options {
-            flex-grow: 1;
-            overflow-y: auto;
-            min-height: 0;
-            padding: 5px;
-            margin-bottom: 15px;
-            align-items: flex-start;
-            align-content: flex-start;
-        }
-    </style>
+    /* 증상 선택 영역이 남은 공간을 채우고 스크롤되도록 설정 */
+    #symptom-options {
+      flex-grow: 1;
+      overflow-y: auto;
+      min-height: 0;
+      padding: 5px;
+      margin-bottom: 15px;
+      align-items: flex-start;
+      align-content: flex-start;
+    }
+
+    .input-error {
+      border-color: #dc3545 !important;
+      /* 붉은색 테두리 */
+      border-width: 2px;
+    }
+
+    .error-message {
+      color: #dc3545;
+      /* 붉은색 글씨 */
+      font-weight: 600;
+      font-size: 0.9rem;
+      margin-top: -15px;
+      /* 입력창과의 간격 조절 */
+      margin-bottom: 15px;
+      height: 1.2rem;
+      /* 메시지가 없을 때도 공간을 차지하도록 높이 지정 */
+    }
+  </style>
 </head>
 
 <body>
-    <div id="body-part-tooltip"></div>
+  <div id="body-part-tooltip"></div>
 
-    <div class="container">
-        <div id="left-panel" class="left-panel hidden">
-            <div id="body-map-container">
-                <div id="zoom-wrapper">
-                    <svg id="body-svg" x="0px" y="0px" viewBox="0 0 190 345" xml:space="preserve"
-                        xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-                        <g id="front-view">
-                            <image xlink:href="front-full-body.png" height="100%" width="100%" x="0" y="0"
-                                class="body-bg-img">
-                            </image>
-                            <g class="zoom-group">
-                                <g class="head">
-                                    <path class="layers" data-name="머리" fill="#83B7D6" fill-rule="nonzero"
-                                        d="M98.626 35.367c-2.955-9.235-7.495-17.629-14.908-23.78C72.474 2.256 59.28-1.644 44.648.636 35.374 2.082 26.715 5.375 19.72 11.783 11.668 19.158 6.678 28.498 4.07 39.08.817 52.292.365 65.728 1.084 79.236c.054 1.029-.03 1.827-.527 2.475.035.028.067.059.101.088.055-.02.11-.036.165-.06.132-.06.259-.127.383-.199.05-.238.246-.427.53-.359 1.678-1.295 2.621-3.691 3.276-5.555C6.797 70.54 7.33 65.144 8.235 59.863c1.014-5.922 1.69-12.016 4.329-17.498 2.459-5.11 6.646-8.69 11.908-10.722 6.72-2.593 14.481-3.237 21.625-3.583 7.08-.344 14.265.027 21.178 1.674 13.452 3.206 24.266 11.815 28.795 25.1 2.148 6.299 3.27 13.44 7.045 19.061.175-13.008-.458-25.928-4.49-38.528"
-                                        opacity=".525" transform="scale(0.28,0.31), translate(286,2)"></path>
-                                    <path class="layers" data-name="이마" fill="#83B7D6" fill-rule="nonzero"
-                                        d="M14.231 38.7c6.205-1.42 12.65-1.807 18.97-2.456 8.74-.898 17.604-.815 26.34.086 7.577.781 14.899 2.382 22.196 4.529 3.188.937 6.382 1.9 9.464 3.152 1.75.71 3.664 1.495 5.172 2.715-3.443-4.73-4.806-11.487-6.366-16.736-2.285-7.682-6.077-14.591-12.445-19.632-5.786-4.578-12.898-7.14-20.106-8.395C49.843.637 42.013.705 34.346 1.49 26.948 2.25 18.524 3.19 12.58 8.112c-9.188 7.611-8.732 21.912-10.808 32.72-.292 1.52-.605 3.216-1.04 4.905 3.341-3.887 8.491-5.889 13.5-7.036"
-                                        opacity=".525" transform="scale(0.27,0.29), translate(304,31)"></path>
-                                    <path class="layers" data-name="눈" fill="#83B7D6" fill-rule="nonzero"
-                                        d="M26.998 22.229c4.127-.122 8.233-.728 12.206-1.856 3.288-.935 6.399-2.435 9.82-2.86 6.548-.813 12.414 2.801 18.68 3.978 3.898.732 7.922.884 11.875.62 4.003-.268 8.33-.66 11.889-2.678 3.288-1.863 5.052-6.181 8.381-7.87-2.165-1.856-5.339-2.818-7.903-3.71-2.91-1.012-5.876-1.855-8.832-2.728C67.9.632 51.382-.45 35.646 1.409c-10.46 1.235-26.63.813-32.077 11.878-.682 1.624-1.571 3.105-2.777 4.255 8.42 2.956 17.235 4.953 26.206 4.687"
-                                        opacity=".525" transform="scale(0.26,0.26), translate(313,75)"></path>
-                                    <path class="layers" data-name="코" fill="#83B7D6" fill-rule="nonzero"
-                                        d="M12.057 1.346C6.797 7.454-.66 14.784.333 23.633c.63 5.613 5.978 7.768 10.95 8.285 2.562.265 5.154.192 7.713-.062 2.667-.266 5.823-.532 8.238-1.78 5.256-2.716 3.079-9.42 1.43-13.735-1.853-4.847-4.638-9.476-5.842-14.552a.528.528 0 0 1-.007-.204c-.955-.299-1.92-.57-2.903-.777-2.656-.556-5.2-.476-7.754.079a.482.482 0 0 1-.1.459"
-                                        opacity=".525" transform="scale(0.26,0.31), translate(348,75)"></path>
-                                    <path class="layers" data-name="광대/뺨" fill="#83B7D6" fill-rule="nonzero"
-                                        d="M102.954 5.357c-.777-.791-.955-1.732-.923-3.017.015-.6.026-1.2.04-1.8a.414.414 0 0 1-.383-.152c-.026-.03-.057-.059-.084-.09-2.48 1.07-4.145 3.886-5.935 5.78-2.259 2.39-5.18 3.557-8.368 4.21-6.777 1.392-14.194 1.36-20.92-.28-2.212-.538-4.338-1.356-6.493-2.077 1.734 6.818 6.135 12.738 7.398 19.726 1 5.535-1.456 9.25-6.987 10.392-5.514 1.14-11.699 1.709-17.173.082-4.985-1.48-8.152-5.261-7.82-10.588.513-8.198 6.435-14.432 11.56-20.334-.365.1-.729.207-1.094.326-7.583 2.472-14.747 4.085-22.792 3.613C15.396 10.704 8 8.82.87 6.27c-.142.091-.285.17-.428.243 1.592 1.557 2.87 3.48 3.923 5.398 4.214 7.673 6.272 17.232 5.685 25.962-.152 2.249-.586 4.723-1.438 6.93.508-1.172 1.327-2.107 2.67-2.411 2.524-.57 5.134 1.445 6.864 3.018 2.685 2.442 4.384 5.619 6.556 8.47 6.331-8.153 15.64-12.287 26.003-12.38 6.049-.054 12.186 1.073 17.954 2.842 4.874 1.495 10.466 3.635 13.974 7.478 1.683-2.079 3.549-3.994 6.03-4.998 1.858-.752 3.466-.82 4.906-.437.426-.526 1.049-.762 1.952-.862-4.547-13.81-3.686-31.961 7.433-40.165"
-                                        opacity=".525" transform="scale(0.28,0.25), translate(286,91)"></path>
-                                    <path class="layers" data-name="입" fill="#83B7D6" fill-rule="nonzero"
-                                        d="M56.976 10.57C53.51 6.74 47.88 4.644 43.038 3.192 37.693 1.59 32.084.55 26.495.493 16.132.387 6.616 4.399.33 12.677l.092.115c3.44 4.157 8.056 7.617 13.73 6.959 4.944-.574 9.517-2.244 14.573-2.104 4.99.138 9.729 2.01 14.685 2.142 4.696.126 8.117-2.348 11.008-5.852.872-1.058 1.717-2.209 2.597-3.338-.012-.012-.026-.015-.038-.029"
-                                        opacity=".525" transform="scale(0.28,0.28), translate(310,118)"></path>
-                                    <path class="layers" data-name="턱" fill="#83B7D6" fill-rule="nonzero"
-                                        d="M74.818 8.978c-2.576 3.025-4.69 6.54-8.057 8.787-2.653 1.77-5.688 2.239-8.821 1.917-4.576-.47-8.931-1.977-13.574-2.052-4.903-.08-9.363 1.579-14.155 2.127-6.314.722-10.953-3.057-14.657-7.608-.236-.058-.427-.256-.393-.49-1.165-1.472-2.238-3.01-3.24-4.493C10.252 4.7 7.987 2.131 5.23.86 2.011-.626.628 1.45.086 4.025c.34.551.536 1.285.728 2.137 1.16 5.17 2.552 10.292 3.963 15.402.057.207.124.411.198.614C16.818 30.595 29.046 41.62 44.37 40.681c8.256-.505 16.566-5.566 23.402-9.902 4.095-2.596 8.034-5.434 11.831-8.453 2.5-5.401 3.565-11.072 4.267-16.864.047-.387.11-.723.19-1.018-3.339-.562-6.657 1.5-9.243 4.534"
-                                        opacity=".525" transform="scale(0.295,0.31), translate(279,106)"></path>
-                                    <path class="layers" data-name="귀" fill="#83B7D6" fill-rule="nonzero"
-                                        d="M10.38 40.019a5.09 5.09 0 0 1 .715-.039c.094-.178.185-.36.271-.546 3.177-6.872 1.872-15.922.025-22.955-1.312-5-3.576-11.847-7.884-15.614A4.63 4.63 0 0 1 1.842.98C1.181 1.521.584 2.408.545 3.107.31 7.377.015 11.69.375 15.934c.62 7.298.516 14.81 5.275 21.183 1.314 1.759 2.467 3.182 4.73 2.902"
-                                        opacity=".525" transform="scale(0.27,0.29), translate(293,81)"></path>
-                                    <path class="layers" data-name="귀" fill="#83B7D6" fill-rule="nonzero"
-                                        d="M10.017.148C9.945.108 9.88.066 9.812.024 3.346 4.786.572 13.2.212 21.395c-.257 5.884.443 12.213 2.34 18.048 1.4-.132 3.11-.998 3.913-2.077 1.514-2.034 2.898-4.418 3.457-6.858 1.106-4.825 1.831-9.766 2.301-14.7.384-4.024.351-8.117.105-12.155-.076-1.246-1.2-2.873-2.31-3.505"
-                                        opacity=".525" transform="scale(0.29,0.29), translate(367,82)"></path>
-                                </g>
-                                <g class="neck">
-                                    <path class="layers" data-name="목" fill="#83B7D6" fill-rule="nonzero"
-                                        d="M30.842 73.707c11.626 2.265 23.388 4.11 35.238 4.592 11.635.472 22.686-1.188 34.072-3.407 17.698-3.45 35.35-7.32 53.173-10.039-3.728-1.712-7.198-4.047-10.755-6.145-9.286-5.475-17.905-11.873-25.991-18.992-2.157-1.898-3.418-4.182-3.458-7.186-.1-7.58-.48-15.16-.479-22.739.001-2.867-.093-6.078.927-8.621a142.538 142.538 0 0 1-7.592 5.488c-5.752 3.87-11.838 7.36-18.33 9.836-5.962 2.274-11.903 2.688-18.122 1.116C58.501 14.823 49.573 7.35 40.465.78c.377.814.741 1.627.911 2.483 2.017 10.152 1.757 20.418.785 30.627-.216 2.27-1.956 4.945-3.804 6.416-8.984 7.151-18.17 14.056-27.445 20.832C7.726 63.465 4.26 65.503.69 67.198c10.043 2.206 20.058 4.543 30.152 6.51"
-                                        opacity=".525" transform="scale(0.27,0.27), translate(274,153)">
-                                    </path>
-                                </g>
-                                <g class="torso">
-                                    <path class="layers" data-name="상흉부" fill="#83B7D6" fill-rule="nonzero"
-                                        d="M170.308.694C162.86 1.81 155.44 3.128 148.042 4.55c-12.859 2.471-25.662 5.22-38.536 7.619-10.854 2.022-21.577 2.602-32.6 1.778-20.366-1.522-40.232-6.43-60.132-10.799C10.646 8.475 5.109 14.513.632 21.273h1.077a.45.45 0 0 1 .366-.166c14.14.031 28.211 1.4 42.178 3.556 6.159.95 12.296 2.039 18.422 3.187 5.048.947 10.135 2.217 15.25 2.927-.083-.157-.162-.317-.244-.474-.299-.566.559-1.067.858-.501.198.374.389.753.582 1.13.866.104 1.733.192 2.6.256 8.419.62 16.636-.98 24.704-3.176l.03-.08c.159-.408.662-.404.883-.169 2.679-.744 5.34-1.547 7.988-2.35 5.292-1.605 10.59-3.217 15.999-4.388 5.538-1.2 11.193-1.782 16.813-2.47 12.49-1.53 25.037-2.799 37.63-2.904C181 10.201 175.665 5.214 170.308.694"
-                                        opacity=".525" transform="scale(0.28,0.27), translate(245,217)"></path>
-                                    <path class="layers" data-name="흉골" fill="#83B7D6" fill-rule="nonzero"
-                                        d="M20.86 38.251c-.275-12.84 1.628-26.018 6.133-38.086-8.608 2.29-17.428 3.808-26.34 2.81 10.213 20.449 13.94 44.34 5.199 65.782.182.135.289.374.148.63-.343.623-.843 1.264-1.26 1.926-.209.454-.42.908-.638 1.36 8.62-.32 17.25-.04 25.72.676-6.436-10.387-8.704-23.024-8.962-35.098"
-                                        opacity=".525" transform="scale(0.25,0.27), translate(364,245)"></path>
-                                    <path class="layers" data-name="가슴" fill="#83B7D6" fill-rule="nonzero"
-                                        d="M86.615.638C72.16.698 57.77 2.315 43.449 4.134c-5.934.754-11.737 1.687-17.523 3.227-5.325 1.417-10.566 3.122-15.854 4.666-.965.28-1.933.553-2.902.82C2.62 24.779.659 37.792.84 50.528c.178 12.378 2.46 25.368 9.225 35.93.471.042.944.08 1.414.124 16.051 1.533 30.763 6.814 45.35 13.46 7.226 3.29 14.431 6.572 21.29 10.59 3.248 1.902 6.443 3.993 9.313 6.439.217-.533.432-1.065.635-1.602l.674.022c1.668-10.995 4.507-21.922 7-32.722 3.032-13.141 6.668-26.698 7.426-40.213.901-16.078-6.437-30.067-16.552-41.918"
-                                        opacity=".525" transform="scale(0.28,0.27), translate(344,234)"></path>
-                                    <path class="layers" data-name="가슴" fill="#83B7D6" fill-rule="nonzero"
-                                        d="M89.2 9.8c-6.22-.89-12.39-2.37-18.57-3.508-6.114-1.126-12.242-2.18-18.393-3.086C39.652 1.355 26.979.21 14.257.116a.455.455 0 0 1-.354.151h-2.925a71.738 71.738 0 0 0-4.09 7.273C2.605 16.333.281 26.004.297 35.794.319 47.1 4.086 57.898 5.702 69.013 7.77 83.262 8.34 97.678 9.497 112.02c.278-.428.554-.856.833-1.283.324-.497.819-.883 1.64-1.75.41 1.093.83 2.128 1.24 3.136 8.552-10.083 19.647-17.519 31.872-22.564 15.13-6.245 31.542-9.152 48.023-9.852a.453.453 0 0 1-.002-.225c.145-.557.42-1.079.737-1.585 10.122-21.996 6.338-46.969-4.372-68.066-.09-.012-.178-.02-.268-.032"
-                                        opacity=".525" transform="scale(0.28,0.27), translate(234,239)"></path>
-                                    <path class="layers" data-name="하흉부" fill="#83B7D6" fill-rule="nonzero"
-                                        d="M171.675 23.274c-7.645-4.152-15.644-7.72-23.628-11.173-7.547-3.265-15.274-6.16-23.281-8.08-5.272-1.265-10.622-2.01-16.006-2.51.19.28.382.56.578.835.373.522-.49 1.018-.858.502-.34-.477-.666-.962-.987-1.45a223.219 223.219 0 0 0-3.367-.266C91.63.25 79.028.404 66.588 1.921 42.05 4.913 16.826 13.698.623 33.147c.767 1.896 1.465 3.704 1.93 5.567.756 3.03 1.47 6.071 2.173 9.115 11.5-10.043 24.588-18.192 39.11-23.082 25.118-8.457 52.07-6.27 77.282.585 13.053 3.55 25.719 8.28 38.092 13.724 7.262 3.194 14.684 6.877 20.894 11.936.99-4.603 1.938-9.216 3.09-13.778.449-1.773 1.145-3.483 1.848-5.192-4.018-3.485-8.735-6.232-13.367-8.748"
-                                        opacity=".525" transform="scale(0.28,0.31), translate(247,278)"></path>
-                                    <path class="layers" data-name="명치" fill="#83B7D6" fill-rule="nonzero"
-                                        d="M.037 37.072c-.202 11.086 3.63 24.136 14.12 29.717 8.768 4.665 18.698.423 25.093-6.218 7.25-7.528 10.135-17.614 11.303-27.757 1.043-9.06 1.955-23.667-6.882-29.413a.48.48 0 0 1-.216-.523C33.823 1.043 24.06.04 14.239.181c-.209.003-.418.011-.627.015C4.348 9.522.273 24.252.037 37.072"
-                                        opacity=".525" transform="scale(0.28,0.29), translate(310,320)"></path>
-                                    <path class="layers" data-name="상복부" fill="#83B7D6" fill-rule="nonzero"
-                                        d="M170.185 53.464c1.13-6.537 2.822-12.977 4.262-19.46.146-.656.29-1.312.432-1.968-7.74-6.46-17.535-10.658-26.67-14.469-14.478-6.039-29.621-11.258-45.12-14.366 4.151 3.25 5.81 8.66 6.51 13.74.882 6.399.471 12.974-.521 19.336-1.674 10.722-5.711 21.157-14.492 28.045-7.455 5.848-17.574 7.622-25.525 1.668-9.921-7.427-12.744-20.576-11.857-32.288C58.09 21.977 61.978 9.006 70.215.23 58.247.61 46.371 2.835 35.17 7.117 22.158 12.09 10.403 19.743-.022 28.924c1.711 7.444 3.368 14.901 5.364 22.267 2.161 7.98 2.3 16.093 1.39 24.004-1.148 9.976-2.95 19.878-4.72 29.783 5.852 2.223 11.272 5.354 16.812 8.257 6.504 3.409 13.37 5.952 20.318 8.297 12.568 4.243 25.68 8.033 39.042 8.032 12.808 0 25.431-2.854 37.563-6.784 12.284-3.98 24.617-8.717 36.191-14.457 5.52-2.738 11.039-5.771 16.046-9.375 1.712-1.231 3.323-2.585 4.902-3.977-2.015-9.923-3.8-19.85-3.24-30.079.209-3.811-.105-7.7.539-11.428"
-                                        opacity=".525" transform="scale(0.28,0.29), translate(252,320)"></path>
-                                    <path class="layers" data-name="하복부" fill="#83B7D6" fill-rule="nonzero"
-                                        d="M175.7 2.948l-.61-2.97c-2.295 1.998-4.652 3.922-7.236 5.588-5.93 3.819-12.146 7.157-18.576 10.053-11.556 5.204-23.533 9.875-35.682 13.492-12.273 3.655-25.104 6.03-37.954 5.323-13.086-.72-26.071-4.827-38.35-9.184-5.816-2.064-11.499-4.29-16.97-7.156-5.435-2.849-10.75-5.929-16.487-8.123-.552 3.1-1.101 6.2-1.622 9.305-.987 5.877-2.66 11.694-.6 17.726.236.693.16 1.525-.014 2.363 13.112 10.42 23.163 24.152 34.738 36.207 13.022 13.56 28.574 23.825 47.634 26.05 18.641 2.177 36.251-4.873 50.354-16.804 13.34-11.287 22.599-26.11 33.395-39.648 3.762-4.717 7.664-9.36 11.843-13.73.252-3.125-.672-6.534-1.094-9.762-.817-6.259-1.502-12.557-2.769-18.73"
-                                        opacity=".525" transform="scale(0.28,0.28), translate(250,432)"></path>
-                                </g>
+  <div class="container">
+    <div id="left-panel" class="left-panel hidden">
+      <div id="body-map-container">
+        <div id="zoom-wrapper">
+          <svg id="body-svg" x="0px" y="0px" viewBox="0 0 190 345" xml:space="preserve"
+            xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+            <g id="front-view">
+              <image xlink:href="front-full-body.png" height="100%" width="100%" x="0" y="0" class="body-bg-img">
+              </image>
+              <g class="zoom-group">
+                <g class="head">
+                  <path class="layers" data-name="머리" fill="#83B7D6" fill-rule="nonzero"
+                    d="M98.626 35.367c-2.955-9.235-7.495-17.629-14.908-23.78C72.474 2.256 59.28-1.644 44.648.636 35.374 2.082 26.715 5.375 19.72 11.783 11.668 19.158 6.678 28.498 4.07 39.08.817 52.292.365 65.728 1.084 79.236c.054 1.029-.03 1.827-.527 2.475.035.028.067.059.101.088.055-.02.11-.036.165-.06.132-.06.259-.127.383-.199.05-.238.246-.427.53-.359 1.678-1.295 2.621-3.691 3.276-5.555C6.797 70.54 7.33 65.144 8.235 59.863c1.014-5.922 1.69-12.016 4.329-17.498 2.459-5.11 6.646-8.69 11.908-10.722 6.72-2.593 14.481-3.237 21.625-3.583 7.08-.344 14.265.027 21.178 1.674 13.452 3.206 24.266 11.815 28.795 25.1 2.148 6.299 3.27 13.44 7.045 19.061.175-13.008-.458-25.928-4.49-38.528"
+                    opacity=".525" transform="scale(0.28,0.31), translate(286,2)"></path>
+                  <path class="layers" data-name="이마" fill="#83B7D6" fill-rule="nonzero"
+                    d="M14.231 38.7c6.205-1.42 12.65-1.807 18.97-2.456 8.74-.898 17.604-.815 26.34.086 7.577.781 14.899 2.382 22.196 4.529 3.188.937 6.382 1.9 9.464 3.152 1.75.71 3.664 1.495 5.172 2.715-3.443-4.73-4.806-11.487-6.366-16.736-2.285-7.682-6.077-14.591-12.445-19.632-5.786-4.578-12.898-7.14-20.106-8.395C49.843.637 42.013.705 34.346 1.49 26.948 2.25 18.524 3.19 12.58 8.112c-9.188 7.611-8.732 21.912-10.808 32.72-.292 1.52-.605 3.216-1.04 4.905 3.341-3.887 8.491-5.889 13.5-7.036"
+                    opacity=".525" transform="scale(0.27,0.29), translate(304,31)"></path>
+                  <path class="layers" data-name="눈" fill="#83B7D6" fill-rule="nonzero"
+                    d="M26.998 22.229c4.127-.122 8.233-.728 12.206-1.856 3.288-.935 6.399-2.435 9.82-2.86 6.548-.813 12.414 2.801 18.68 3.978 3.898.732 7.922.884 11.875.62 4.003-.268 8.33-.66 11.889-2.678 3.288-1.863 5.052-6.181 8.381-7.87-2.165-1.856-5.339-2.818-7.903-3.71-2.91-1.012-5.876-1.855-8.832-2.728C67.9.632 51.382-.45 35.646 1.409c-10.46 1.235-26.63.813-32.077 11.878-.682 1.624-1.571 3.105-2.777 4.255 8.42 2.956 17.235 4.953 26.206 4.687"
+                    opacity=".525" transform="scale(0.26,0.26), translate(313,75)"></path>
+                  <path class="layers" data-name="코" fill="#83B7D6" fill-rule="nonzero"
+                    d="M12.057 1.346C6.797 7.454-.66 14.784.333 23.633c.63 5.613 5.978 7.768 10.95 8.285 2.562.265 5.154.192 7.713-.062 2.667-.266 5.823-.532 8.238-1.78 5.256-2.716 3.079-9.42 1.43-13.735-1.853-4.847-4.638-9.476-5.842-14.552a.528.528 0 0 1-.007-.204c-.955-.299-1.92-.57-2.903-.777-2.656-.556-5.2-.476-7.754.079a.482.482 0 0 1-.1.459"
+                    opacity=".525" transform="scale(0.26,0.31), translate(348,75)"></path>
+                  <path class="layers" data-name="광대/뺨" fill="#83B7D6" fill-rule="nonzero"
+                    d="M102.954 5.357c-.777-.791-.955-1.732-.923-3.017.015-.6.026-1.2.04-1.8a.414.414 0 0 1-.383-.152c-.026-.03-.057-.059-.084-.09-2.48 1.07-4.145 3.886-5.935 5.78-2.259 2.39-5.18 3.557-8.368 4.21-6.777 1.392-14.194 1.36-20.92-.28-2.212-.538-4.338-1.356-6.493-2.077 1.734 6.818 6.135 12.738 7.398 19.726 1 5.535-1.456 9.25-6.987 10.392-5.514 1.14-11.699 1.709-17.173.082-4.985-1.48-8.152-5.261-7.82-10.588.513-8.198 6.435-14.432 11.56-20.334-.365.1-.729.207-1.094.326-7.583 2.472-14.747 4.085-22.792 3.613C15.396 10.704 8 8.82.87 6.27c-.142.091-.285.17-.428.243 1.592 1.557 2.87 3.48 3.923 5.398 4.214 7.673 6.272 17.232 5.685 25.962-.152 2.249-.586 4.723-1.438 6.93.508-1.172 1.327-2.107 2.67-2.411 2.524-.57 5.134 1.445 6.864 3.018 2.685 2.442 4.384 5.619 6.556 8.47 6.331-8.153 15.64-12.287 26.003-12.38 6.049-.054 12.186 1.073 17.954 2.842 4.874 1.495 10.466 3.635 13.974 7.478 1.683-2.079 3.549-3.994 6.03-4.998 1.858-.752 3.466-.82 4.906-.437.426-.526 1.049-.762 1.952-.862-4.547-13.81-3.686-31.961 7.433-40.165"
+                    opacity=".525" transform="scale(0.28,0.25), translate(286,91)"></path>
+                  <path class="layers" data-name="입" fill="#83B7D6" fill-rule="nonzero"
+                    d="M56.976 10.57C53.51 6.74 47.88 4.644 43.038 3.192 37.693 1.59 32.084.55 26.495.493 16.132.387 6.616 4.399.33 12.677l.092.115c3.44 4.157 8.056 7.617 13.73 6.959 4.944-.574 9.517-2.244 14.573-2.104 4.99.138 9.729 2.01 14.685 2.142 4.696.126 8.117-2.348 11.008-5.852.872-1.058 1.717-2.209 2.597-3.338-.012-.012-.026-.015-.038-.029"
+                    opacity=".525" transform="scale(0.28,0.28), translate(310,118)"></path>
+                  <path class="layers" data-name="턱" fill="#83B7D6" fill-rule="nonzero"
+                    d="M74.818 8.978c-2.576 3.025-4.69 6.54-8.057 8.787-2.653 1.77-5.688 2.239-8.821 1.917-4.576-.47-8.931-1.977-13.574-2.052-4.903-.08-9.363 1.579-14.155 2.127-6.314.722-10.953-3.057-14.657-7.608-.236-.058-.427-.256-.393-.49-1.165-1.472-2.238-3.01-3.24-4.493C10.252 4.7 7.987 2.131 5.23.86 2.011-.626.628 1.45.086 4.025c.34.551.536 1.285.728 2.137 1.16 5.17 2.552 10.292 3.963 15.402.057.207.124.411.198.614C16.818 30.595 29.046 41.62 44.37 40.681c8.256-.505 16.566-5.566 23.402-9.902 4.095-2.596 8.034-5.434 11.831-8.453 2.5-5.401 3.565-11.072 4.267-16.864.047-.387.11-.723.19-1.018-3.339-.562-6.657 1.5-9.243 4.534"
+                    opacity=".525" transform="scale(0.295,0.31), translate(279,106)"></path>
+                  <path class="layers" data-name="귀" fill="#83B7D6" fill-rule="nonzero"
+                    d="M10.38 40.019a5.09 5.09 0 0 1 .715-.039c.094-.178.185-.36.271-.546 3.177-6.872 1.872-15.922.025-22.955-1.312-5-3.576-11.847-7.884-15.614A4.63 4.63 0 0 1 1.842.98C1.181 1.521.584 2.408.545 3.107.31 7.377.015 11.69.375 15.934c.62 7.298.516 14.81 5.275 21.183 1.314 1.759 2.467 3.182 4.73 2.902"
+                    opacity=".525" transform="scale(0.27,0.29), translate(293,81)"></path>
+                  <path class="layers" data-name="귀" fill="#83B7D6" fill-rule="nonzero"
+                    d="M10.017.148C9.945.108 9.88.066 9.812.024 3.346 4.786.572 13.2.212 21.395c-.257 5.884.443 12.213 2.34 18.048 1.4-.132 3.11-.998 3.913-2.077 1.514-2.034 2.898-4.418 3.457-6.858 1.106-4.825 1.831-9.766 2.301-14.7.384-4.024.351-8.117.105-12.155-.076-1.246-1.2-2.873-2.31-3.505"
+                    opacity=".525" transform="scale(0.29,0.29), translate(367,82)"></path>
+                </g>
+                <g class="neck">
+                  <path class="layers" data-name="목" fill="#83B7D6" fill-rule="nonzero"
+                    d="M30.842 73.707c11.626 2.265 23.388 4.11 35.238 4.592 11.635.472 22.686-1.188 34.072-3.407 17.698-3.45 35.35-7.32 53.173-10.039-3.728-1.712-7.198-4.047-10.755-6.145-9.286-5.475-17.905-11.873-25.991-18.992-2.157-1.898-3.418-4.182-3.458-7.186-.1-7.58-.48-15.16-.479-22.739.001-2.867-.093-6.078.927-8.621a142.538 142.538 0 0 1-7.592 5.488c-5.752 3.87-11.838 7.36-18.33 9.836-5.962 2.274-11.903 2.688-18.122 1.116C58.501 14.823 49.573 7.35 40.465.78c.377.814.741 1.627.911 2.483 2.017 10.152 1.757 20.418.785 30.627-.216 2.27-1.956 4.945-3.804 6.416-8.984 7.151-18.17 14.056-27.445 20.832C7.726 63.465 4.26 65.503.69 67.198c10.043 2.206 20.058 4.543 30.152 6.51"
+                    opacity=".525" transform="scale(0.27,0.27), translate(274,153)">
+                  </path>
+                </g>
+                <g class="torso">
+                  <path class="layers" data-name="상흉부" fill="#83B7D6" fill-rule="nonzero"
+                    d="M170.308.694C162.86 1.81 155.44 3.128 148.042 4.55c-12.859 2.471-25.662 5.22-38.536 7.619-10.854 2.022-21.577 2.602-32.6 1.778-20.366-1.522-40.232-6.43-60.132-10.799C10.646 8.475 5.109 14.513.632 21.273h1.077a.45.45 0 0 1 .366-.166c14.14.031 28.211 1.4 42.178 3.556 6.159.95 12.296 2.039 18.422 3.187 5.048.947 10.135 2.217 15.25 2.927-.083-.157-.162-.317-.244-.474-.299-.566.559-1.067.858-.501.198.374.389.753.582 1.13.866.104 1.733.192 2.6.256 8.419.62 16.636-.98 24.704-3.176l.03-.08c.159-.408.662-.404.883-.169 2.679-.744 5.34-1.547 7.988-2.35 5.292-1.605 10.59-3.217 15.999-4.388 5.538-1.2 11.193-1.782 16.813-2.47 12.49-1.53 25.037-2.799 37.63-2.904C181 10.201 175.665 5.214 170.308.694"
+                    opacity=".525" transform="scale(0.28,0.27), translate(245,217)"></path>
+                  <path class="layers" data-name="흉골" fill="#83B7D6" fill-rule="nonzero"
+                    d="M20.86 38.251c-.275-12.84 1.628-26.018 6.133-38.086-8.608 2.29-17.428 3.808-26.34 2.81 10.213 20.449 13.94 44.34 5.199 65.782.182.135.289.374.148.63-.343.623-.843 1.264-1.26 1.926-.209.454-.42.908-.638 1.36 8.62-.32 17.25-.04 25.72.676-6.436-10.387-8.704-23.024-8.962-35.098"
+                    opacity=".525" transform="scale(0.25,0.27), translate(364,245)"></path>
+                  <path class="layers" data-name="가슴" fill="#83B7D6" fill-rule="nonzero"
+                    d="M86.615.638C72.16.698 57.77 2.315 43.449 4.134c-5.934.754-11.737 1.687-17.523 3.227-5.325 1.417-10.566 3.122-15.854 4.666-.965.28-1.933.553-2.902.82C2.62 24.779.659 37.792.84 50.528c.178 12.378 2.46 25.368 9.225 35.93.471.042.944.08 1.414.124 16.051 1.533 30.763 6.814 45.35 13.46 7.226 3.29 14.431 6.572 21.29 10.59 3.248 1.902 6.443 3.993 9.313 6.439.217-.533.432-1.065.635-1.602l.674.022c1.668-10.995 4.507-21.922 7-32.722 3.032-13.141 6.668-26.698 7.426-40.213.901-16.078-6.437-30.067-16.552-41.918"
+                    opacity=".525" transform="scale(0.28,0.27), translate(344,234)"></path>
+                  <path class="layers" data-name="가슴" fill="#83B7D6" fill-rule="nonzero"
+                    d="M89.2 9.8c-6.22-.89-12.39-2.37-18.57-3.508-6.114-1.126-12.242-2.18-18.393-3.086C39.652 1.355 26.979.21 14.257.116a.455.455 0 0 1-.354.151h-2.925a71.738 71.738 0 0 0-4.09 7.273C2.605 16.333.281 26.004.297 35.794.319 47.1 4.086 57.898 5.702 69.013 7.77 83.262 8.34 97.678 9.497 112.02c.278-.428.554-.856.833-1.283.324-.497.819-.883 1.64-1.75.41 1.093.83 2.128 1.24 3.136 8.552-10.083 19.647-17.519 31.872-22.564 15.13-6.245 31.542-9.152 48.023-9.852a.453.453 0 0 1-.002-.225c.145-.557.42-1.079.737-1.585 10.122-21.996 6.338-46.969-4.372-68.066-.09-.012-.178-.02-.268-.032"
+                    opacity=".525" transform="scale(0.28,0.27), translate(234,239)"></path>
+                  <path class="layers" data-name="하흉부" fill="#83B7D6" fill-rule="nonzero"
+                    d="M171.675 23.274c-7.645-4.152-15.644-7.72-23.628-11.173-7.547-3.265-15.274-6.16-23.281-8.08-5.272-1.265-10.622-2.01-16.006-2.51.19.28.382.56.578.835.373.522-.49 1.018-.858.502-.34-.477-.666-.962-.987-1.45a223.219 223.219 0 0 0-3.367-.266C91.63.25 79.028.404 66.588 1.921 42.05 4.913 16.826 13.698.623 33.147c.767 1.896 1.465 3.704 1.93 5.567.756 3.03 1.47 6.071 2.173 9.115 11.5-10.043 24.588-18.192 39.11-23.082 25.118-8.457 52.07-6.27 77.282.585 13.053 3.55 25.719 8.28 38.092 13.724 7.262 3.194 14.684 6.877 20.894 11.936.99-4.603 1.938-9.216 3.09-13.778.449-1.773 1.145-3.483 1.848-5.192-4.018-3.485-8.735-6.232-13.367-8.748"
+                    opacity=".525" transform="scale(0.28,0.31), translate(247,278)"></path>
+                  <path class="layers" data-name="명치" fill="#83B7D6" fill-rule="nonzero"
+                    d="M.037 37.072c-.202 11.086 3.63 24.136 14.12 29.717 8.768 4.665 18.698.423 25.093-6.218 7.25-7.528 10.135-17.614 11.303-27.757 1.043-9.06 1.955-23.667-6.882-29.413a.48.48 0 0 1-.216-.523C33.823 1.043 24.06.04 14.239.181c-.209.003-.418.011-.627.015C4.348 9.522.273 24.252.037 37.072"
+                    opacity=".525" transform="scale(0.28,0.29), translate(310,320)"></path>
+                  <path class="layers" data-name="상복부" fill="#83B7D6" fill-rule="nonzero"
+                    d="M170.185 53.464c1.13-6.537 2.822-12.977 4.262-19.46.146-.656.29-1.312.432-1.968-7.74-6.46-17.535-10.658-26.67-14.469-14.478-6.039-29.621-11.258-45.12-14.366 4.151 3.25 5.81 8.66 6.51 13.74.882 6.399.471 12.974-.521 19.336-1.674 10.722-5.711 21.157-14.492 28.045-7.455 5.848-17.574 7.622-25.525 1.668-9.921-7.427-12.744-20.576-11.857-32.288C58.09 21.977 61.978 9.006 70.215.23 58.247.61 46.371 2.835 35.17 7.117 22.158 12.09 10.403 19.743-.022 28.924c1.711 7.444 3.368 14.901 5.364 22.267 2.161 7.98 2.3 16.093 1.39 24.004-1.148 9.976-2.95 19.878-4.72 29.783 5.852 2.223 11.272 5.354 16.812 8.257 6.504 3.409 13.37 5.952 20.318 8.297 12.568 4.243 25.68 8.033 39.042 8.032 12.808 0 25.431-2.854 37.563-6.784 12.284-3.98 24.617-8.717 36.191-14.457 5.52-2.738 11.039-5.771 16.046-9.375 1.712-1.231 3.323-2.585 4.902-3.977-2.015-9.923-3.8-19.85-3.24-30.079.209-3.811-.105-7.7.539-11.428"
+                    opacity=".525" transform="scale(0.28,0.29), translate(252,320)"></path>
+                  <path class="layers" data-name="하복부" fill="#83B7D6" fill-rule="nonzero"
+                    d="M175.7 2.948l-.61-2.97c-2.295 1.998-4.652 3.922-7.236 5.588-5.93 3.819-12.146 7.157-18.576 10.053-11.556 5.204-23.533 9.875-35.682 13.492-12.273 3.655-25.104 6.03-37.954 5.323-13.086-.72-26.071-4.827-38.35-9.184-5.816-2.064-11.499-4.29-16.97-7.156-5.435-2.849-10.75-5.929-16.487-8.123-.552 3.1-1.101 6.2-1.622 9.305-.987 5.877-2.66 11.694-.6 17.726.236.693.16 1.525-.014 2.363 13.112 10.42 23.163 24.152 34.738 36.207 13.022 13.56 28.574 23.825 47.634 26.05 18.641 2.177 36.251-4.873 50.354-16.804 13.34-11.287 22.599-26.11 33.395-39.648 3.762-4.717 7.664-9.36 11.843-13.73.252-3.125-.672-6.534-1.094-9.762-.817-6.259-1.502-12.557-2.769-18.73"
+                    opacity=".525" transform="scale(0.28,0.28), translate(250,432)"></path>
+                </g>
 
-                                <g class="pelvis">
-                                    <path class="layers" data-name="골반" fill="#83B7D6" fill-rule="nonzero"
-                                        d="M168.796 28.1c-.784-9.345-.286-20.176 5.44-27.983-4.955 5.619-9.577 11.538-14.081 17.515-10.409 13.812-20.507 27.667-35.2 37.306-9.588 6.29-20.324 10.01-31.406 10.78.09.032.178.067.267.1a.5.5 0 0 1 .396-.09c7.35 1.281 20.506 5.685 19.244 15.355-.846 6.486-8.782 7.934-14.091 8.378-6.696.56-13.68.009-20.3-1.113-7.043-1.192-18.545-4.767-15.9-14.277 2.059-7.407 12.155-7.88 18.635-8.303.027-.012.047-.031.078-.04.26-.075.521-.144.784-.21a63.124 63.124 0 0 1-7.626-1.284C57.255 60.101 43.472 49.232 31.34 36.047 22.037 25.937 13.45 14.957 3.065 5.953c4.622 11.516 8.429 24.324 7.307 36.785C9.401 53.53 4.595 63.227 0 72.898A2150.39 2150.39 0 0 0 20.178 85.7c.413.035.818-.005 1.226-.089a.431.431 0 0 1 .258-.062h.009c.173-.043.346-.09.52-.147.256-.082.444.042.539.224 12.746.913 26.022 2.094 36.433 10.353.766.607 1.521 1.228 2.273 1.857 8.76-4.771 19.105-6.614 28.986-6.892 10.014-.283 20.703 1.027 29.56 6.006a69.003 69.003 0 0 1 7.866-6.753c10.24-7.513 22.568-10.208 34.756-12.79 3.323-4.64 6.495-9.383 10.172-13.77a88.309 88.309 0 0 1 3.503-3.92c-3.906-10.09-6.579-20.844-7.483-31.617"
-                                        opacity=".525" transform="scale(0.30,0.30), translate(228,432)"></path>
-                                    <path class="layers" data-name="생식기" fill="#83B7D6" fill-rule="nonzero"
-                                        d="M40.395 30.224c4.592-8.735 9.917-16.905 16.71-23.86C48.429 1.565 37.99.32 28.217.603 18.617.879 8.555 2.637 0 7.203c3.827 3.26 7.474 6.78 10.893 10.432 3.326 3.552 6.624 7.372 9.027 11.655 4.669 1.546 9.493 2.489 14.548 2.31 2.109-.076 4.195-.3 6.255-.654-.276-.084-.503-.389-.328-.722"
-                                        opacity=".525" transform="scale(0.29,0.29), translate(304,542)"></path>
-                                    <path class="layers" data-name="엉덩이" fill="#83B7D6" fill-rule="nonzero"
-                                        d="M18.31 40.454c-2.68-8.386-4.835-16.944-7.65-25.281C9.038 10.37 7.122 5.983 8.272.564c-.32.342-.632.691-.95 1.035.419-.1.854.448.472.828C-.264 10.42-.625 23.197.426 33.787 1.425 43.85 3.947 53.88 7.56 63.344A87.076 87.076 0 0 1 21.027 52.01c-.632-3.88-1.497-7.736-2.717-11.555"
-                                        opacity=".525" transform="scale(0.26,0.29), translate(457,447)"></path>
-                                    <path class="layers" data-name="엉덩이" fill="#83B7D6" fill-rule="nonzero"
-                                        d="M23.314 39.106c.904-12.766-3.206-25.778-8.015-37.453-.438-.364-.873-.732-1.318-1.089l-.193.697c-.793 2.88-1.846 5.69-2.657 8.566-1.96 6.96-3.88 13.934-5.742 20.921-1.453 5.451-3.435 10.86-4.061 16.415C.804 51.807.386 56.464 0 61.124c4.333 2.825 8.674 5.633 13.022 8.43 4.644-9.747 9.52-19.558 10.292-30.448"
-                                        opacity=".525" transform="scale(0.26,0.29), translate(254,454)"></path>
-                                    <path class="layers" data-name="치골상부" fill="#83B7D6" fill-rule="nonzero"
-                                        d="M23.37.564c-1.36.072-2.717.289-4.03.61a.481.481 0 0 1-.403.264C12.187 1.914-1.88 2.656.21 12.941c1.503 7.402 12.276 8.894 18.41 9.643 5.868.717 11.868 1.182 17.768.59 5.375-.538 13.15-2.44 12.414-9.37C48.048 6.7 38.917 3.282 32.338 1.837c.054.36-.324.768-.734.528-1.771-1.04-3.727-1.583-5.732-1.76a61.91 61.91 0 0 1-2.503-.04"
-                                        opacity=".525" transform="scale(0.29,0.29), translate(302,515)"></path>
-                                </g>
+                <g class="pelvis">
+                  <path class="layers" data-name="골반" fill="#83B7D6" fill-rule="nonzero"
+                    d="M168.796 28.1c-.784-9.345-.286-20.176 5.44-27.983-4.955 5.619-9.577 11.538-14.081 17.515-10.409 13.812-20.507 27.667-35.2 37.306-9.588 6.29-20.324 10.01-31.406 10.78.09.032.178.067.267.1a.5.5 0 0 1 .396-.09c7.35 1.281 20.506 5.685 19.244 15.355-.846 6.486-8.782 7.934-14.091 8.378-6.696.56-13.68.009-20.3-1.113-7.043-1.192-18.545-4.767-15.9-14.277 2.059-7.407 12.155-7.88 18.635-8.303.027-.012.047-.031.078-.04.26-.075.521-.144.784-.21a63.124 63.124 0 0 1-7.626-1.284C57.255 60.101 43.472 49.232 31.34 36.047 22.037 25.937 13.45 14.957 3.065 5.953c4.622 11.516 8.429 24.324 7.307 36.785C9.401 53.53 4.595 63.227 0 72.898A2150.39 2150.39 0 0 0 20.178 85.7c.413.035.818-.005 1.226-.089a.431.431 0 0 1 .258-.062h.009c.173-.043.346-.09.52-.147.256-.082.444.042.539.224 12.746.913 26.022 2.094 36.433 10.353.766.607 1.521 1.228 2.273 1.857 8.76-4.771 19.105-6.614 28.986-6.892 10.014-.283 20.703 1.027 29.56 6.006a69.003 69.003 0 0 1 7.866-6.753c10.24-7.513 22.568-10.208 34.756-12.79 3.323-4.64 6.495-9.383 10.172-13.77a88.309 88.309 0 0 1 3.503-3.92c-3.906-10.09-6.579-20.844-7.483-31.617"
+                    opacity=".525" transform="scale(0.30,0.30), translate(228,432)"></path>
+                  <path class="layers" data-name="생식기" fill="#83B7D6" fill-rule="nonzero"
+                    d="M40.395 30.224c4.592-8.735 9.917-16.905 16.71-23.86C48.429 1.565 37.99.32 28.217.603 18.617.879 8.555 2.637 0 7.203c3.827 3.26 7.474 6.78 10.893 10.432 3.326 3.552 6.624 7.372 9.027 11.655 4.669 1.546 9.493 2.489 14.548 2.31 2.109-.076 4.195-.3 6.255-.654-.276-.084-.503-.389-.328-.722"
+                    opacity=".525" transform="scale(0.29,0.29), translate(304,542)"></path>
+                  <path class="layers" data-name="엉덩이" fill="#83B7D6" fill-rule="nonzero"
+                    d="M18.31 40.454c-2.68-8.386-4.835-16.944-7.65-25.281C9.038 10.37 7.122 5.983 8.272.564c-.32.342-.632.691-.95 1.035.419-.1.854.448.472.828C-.264 10.42-.625 23.197.426 33.787 1.425 43.85 3.947 53.88 7.56 63.344A87.076 87.076 0 0 1 21.027 52.01c-.632-3.88-1.497-7.736-2.717-11.555"
+                    opacity=".525" transform="scale(0.26,0.29), translate(457,447)"></path>
+                  <path class="layers" data-name="엉덩이" fill="#83B7D6" fill-rule="nonzero"
+                    d="M23.314 39.106c.904-12.766-3.206-25.778-8.015-37.453-.438-.364-.873-.732-1.318-1.089l-.193.697c-.793 2.88-1.846 5.69-2.657 8.566-1.96 6.96-3.88 13.934-5.742 20.921-1.453 5.451-3.435 10.86-4.061 16.415C.804 51.807.386 56.464 0 61.124c4.333 2.825 8.674 5.633 13.022 8.43 4.644-9.747 9.52-19.558 10.292-30.448"
+                    opacity=".525" transform="scale(0.26,0.29), translate(254,454)"></path>
+                  <path class="layers" data-name="치골상부" fill="#83B7D6" fill-rule="nonzero"
+                    d="M23.37.564c-1.36.072-2.717.289-4.03.61a.481.481 0 0 1-.403.264C12.187 1.914-1.88 2.656.21 12.941c1.503 7.402 12.276 8.894 18.41 9.643 5.868.717 11.868 1.182 17.768.59 5.375-.538 13.15-2.44 12.414-9.37C48.048 6.7 38.917 3.282 32.338 1.837c.054.36-.324.768-.734.528-1.771-1.04-3.727-1.583-5.732-1.76a61.91 61.91 0 0 1-2.503-.04"
+                    opacity=".525" transform="scale(0.29,0.29), translate(302,515)"></path>
+                </g>
 
-                                <g class="arm-left">
-                                    <path class="layers" data-name="어깨" fill="#83B7D6" fill-rule="nonzero"
-                                        d="M.413.853c4.323 1.698 8.999 1.679 13.662 1.71 9.217.062 18.149 1.881 25.755 7.303 10.39 7.406 18.258 17.193 24.13 28.46 4.487 8.608 6.661 17.947 6.485 27.66-.104 5.676 1.014 10.968 2.611 16.367 1.366 4.618 2.288 9.437 2.792 14.246-4.074.308-8.299-.918-12.177-2.685-5.165-2.352-10.718-5.532-14.801-9.515-3.93-3.834-7.133-8.344-10.977-12.26-3.039-3.097-6.597-6.097-10.997-6.751.037-.253.083-.504.117-.758.648-4.773.795-9.606.385-14.407C25.728 30.653 14.836 13.62.36.865L.413.853"
-                                        opacity=".525" transform="scale(0.295,0.31), translate(394,190)"></path>
-                                    <path class="layers" data-name="겨드랑이" fill="#83B7D6" fill-rule="nonzero"
-                                        d="M.574 53.672a.574.574 0 0 0-.229.1c.863-12.742 1.728-25.523 4.107-38.09C5.423 10.55 6.89 5.52 7.744.368c5.679.79 10.03 5.828 13.593 9.904 2.51 2.87 4.88 5.999 7.644 8.67-5.146 14.306-16.344 25.86-28.407 34.73"
-                                        opacity=".525" transform="scale(0.30,0.29), translate(406,278)"></path>
-                                    <path class="layers" data-name="상완" fill="#83B7D6" fill-rule="nonzero"
-                                        d="M28.764.677c.758.688 1.547 1.34 2.379 1.94 6.652 4.797 16.103 10.757 24.805 10.032.025.276.056.552.078.827.4 4.854 1.687 9.321 3.684 13.621 4.207 9.06 8.166 18.206 11.391 27.634-19.584 2.06-34.696 17.42-43.497 34.368-1.57-7.12-3.542-14.141-6.206-20.994-2.422-6.228-5.45-11.948-9.406-17.345-3.81-5.2-7.98-10.12-11.613-15.452C12.416 26.405 23.494 14.91 28.764.678"
-                                        opacity=".525" transform="scale(0.29,0.28), translate(424,308)"></path>
-                                    <path class="layers" data-name="팔꿈치" fill="#83B7D6" fill-rule="nonzero"
-                                        d="M44.426.69a164.847 164.847 0 0 1 3.346 11.197c1.35 5.212 2.603 10.483 6.56 14.598 2.621 2.728 5.328 5.406 7.868 8.213-6.86 10.49-14.703 20.377-24.922 27.772-4.57 3.308-9.422 6.335-14.603 8.595-.823-2.093-1.652-4.185-2.618-6.203-3.653-7.63-7.295-15.226-13.26-21.547a162.325 162.325 0 0 1-5.55-6.186c-.102-.498-.21-.994-.316-1.49C9.534 18.512 24.641 2.646 44.426.69"
-                                        opacity=".525" transform="scale(0.29,0.26), translate(453,392)"></path>
-                                    <path class="layers" data-name="전완" fill="#83B7D6" fill-rule="nonzero"
-                                        d="M14.257 28.704C24.77 21.195 32.84 11.187 39.882.466a68.033 68.033 0 0 1 3.52 4.28c6.861 9.162 13.555 18.486 19.693 28.14 4.265 6.707 7.308 14.178 11.21 21.131 8.759 15.602 18.751 30.412 29.433 44.756.617.828 1.223 1.67 1.843 2.502-10.619-3.579-22.664-2.406-33.65-2.593-6.117-.104-12.23.01-18.34.214-4.357-4.162-8.738-8.3-13.028-12.53-8.511-8.391-17.074-16.75-25.204-25.502-4.265-4.593-8.119-9.726-11.3-15.121-1.626-2.757-2.838-5.75-4.025-8.765 5.038-2.183 9.766-5.09 14.223-8.274"
-                                        opacity=".525" transform="scale(0.29,0.26), translate(475,429)"></path>
-                                    <path class="layers" data-name="손목" fill="#83B7D6" fill-rule="nonzero"
-                                        d="M15.981.651c6.437.058 12.894-.02 19.327.204 5.875.204 11.874.77 17.393 2.877.733.922 1.499 1.812 2.337 2.624 7.823 7.595 15.217 15.527 21.62 24.396.281.39.568.774.858 1.155-7.953.455-15.778 2.703-23.17 5.58-5.141 2-10.145 4.347-15.008 6.956a10.375 10.375 0 0 0-.946-1.274c-3.54-4.078-6.69-8.493-10.187-12.61-5.377-6.33-10.645-12.785-16.438-18.718C8.122 8.107 4.374 4.475.602.865 5.726.703 10.852.605 15.982.65"
-                                        opacity=".525" transform="scale(0.29,0.27), translate(525,509)"></path>
-                                    <path class="layers" data-name="손" fill="#83B7D6" fill-rule="nonzero"
-                                        d="M61.3 29.209a75.757 75.757 0 0 0 2.35 3.728c-.148.71-.078 1.685.198 2.238 2.01 4.04 4.009 8.104 6.275 12C57.875 60.84 38.578 65.153 19.977 65.15c-.007-.011-.011-.023-.018-.033-1.73-3.111-3.96-5.967-5.485-9.164-3.424-7.184-7.002-14.352-9.622-21.84-1.7-4.86-1.929-10.259-2.606-15.444-.252-1.92-.592-3.703-1.423-5.361 4.793-2.574 9.722-4.892 14.788-6.862C23.153 3.51 31.139 1.217 39.259.859c3.55 4.445 7.786 8.217 13.165 10.592 1.296.572 2.597 1.136 3.899 1.698.34 5.696 2.044 11.04 4.978 16.06"
-                                        opacity=".525" transform="scale(0.29,0.27), translate(562,541)"></path>
-                                    <path class="layers" data-name="손가락" fill="#83B7D6" fill-rule="nonzero"
-                                        d="M50.574 35.082c.182.306.362.613.548.916 5.08 8.279 10.305 16.477 15.736 24.529 3.499 5.187 6.95 10.348 8.767 16.39.293.976.375 2.644-.179 3.097-.78.638-2.564.976-3.355.502-2.376-1.425-4.925-2.952-6.608-5.072-6.245-7.87-12.162-16-18.221-24.016-1.453-1.923-2.926-3.837-4.512-5.647-.383-.437-1.58-.806-1.832-.577-.496.45-.889 1.39-.781 2.037.156.944.797 1.807 1.222 2.708 2.335 4.948 4.778 9.849 6.951 14.867.982 2.267 1.29 4.817 2.139 7.153 2.099 5.778 4.54 11.439 6.423 17.282.919 2.851 1.18 6.002 1.217 9.024.032 2.581-2.204 3.686-4.362 2.232-1.52-1.024-3.077-2.442-3.84-4.051-2.168-4.569-3.76-9.409-5.9-13.99-3.621-7.753-7.443-15.413-11.282-23.06-1.14-2.272-2.523-4.442-4.004-6.508-.383-.536-1.56-.502-2.371-.73-.221.812-.616 1.625-.608 2.434.008.703.454 1.41.738 2.101 1.64 3.995 3.518 7.91 4.886 11.994 2.453 7.32 4.69 14.717 6.835 22.134.845 2.923 1.387 5.968 1.712 8.994.208 1.942-1.158 2.562-3.002 2.084-2.655-.689-4.265-2.51-5.253-4.925-1.823-4.46-3.466-8.996-5.376-13.417-3.26-7.55-6.672-15.036-10.015-22.55-.776-1.743-1.343-3.62-2.381-5.186-.517-.78-1.885-.995-2.868-1.465-.16.895-.524 1.807-.447 2.681.42 4.778.96 9.544 1.437 14.318.157 1.57.25 3.146.372 4.72.297 3.806.712 7.607.81 11.417.025.964-.741 2.345-1.554 2.796-.568.316-2.254-.35-2.706-1.051-1.234-1.913-2.56-3.982-2.993-6.16-1.782-8.951-3.228-17.97-4.848-26.954-.18-1-.38-2.04-.733-2.992 18.638-.066 37.908-4.443 50.238-18.059zm5.157-10.647c-2.04-3.23-5.075-4.726-8.272-6.035-.883-.36-2.386.03-3.303.636a85.81 85.81 0 0 1-1.392-2.177c-3.13-5.082-5.049-10.446-5.492-16.254 4.908 2.116 9.82 4.222 14.573 6.644 4.142 2.11 8.407 4.237 11.023 8.602 1.95 3.252 4.537 6.118 6.798 9.188.86 1.169 1.602 2.426 2.396 3.64-4.288 2.72-13.36.459-16.331-4.244z"
-                                        opacity=".525" transform="scale(0.29,0.27), translate(580,555)"></path>
-                                </g>
+                <g class="arm-left">
+                  <path class="layers" data-name="어깨" fill="#83B7D6" fill-rule="nonzero"
+                    d="M.413.853c4.323 1.698 8.999 1.679 13.662 1.71 9.217.062 18.149 1.881 25.755 7.303 10.39 7.406 18.258 17.193 24.13 28.46 4.487 8.608 6.661 17.947 6.485 27.66-.104 5.676 1.014 10.968 2.611 16.367 1.366 4.618 2.288 9.437 2.792 14.246-4.074.308-8.299-.918-12.177-2.685-5.165-2.352-10.718-5.532-14.801-9.515-3.93-3.834-7.133-8.344-10.977-12.26-3.039-3.097-6.597-6.097-10.997-6.751.037-.253.083-.504.117-.758.648-4.773.795-9.606.385-14.407C25.728 30.653 14.836 13.62.36.865L.413.853"
+                    opacity=".525" transform="scale(0.295,0.31), translate(394,190)"></path>
+                  <path class="layers" data-name="겨드랑이" fill="#83B7D6" fill-rule="nonzero"
+                    d="M.574 53.672a.574.574 0 0 0-.229.1c.863-12.742 1.728-25.523 4.107-38.09C5.423 10.55 6.89 5.52 7.744.368c5.679.79 10.03 5.828 13.593 9.904 2.51 2.87 4.88 5.999 7.644 8.67-5.146 14.306-16.344 25.86-28.407 34.73"
+                    opacity=".525" transform="scale(0.30,0.29), translate(406,278)"></path>
+                  <path class="layers" data-name="상완" fill="#83B7D6" fill-rule="nonzero"
+                    d="M28.764.677c.758.688 1.547 1.34 2.379 1.94 6.652 4.797 16.103 10.757 24.805 10.032.025.276.056.552.078.827.4 4.854 1.687 9.321 3.684 13.621 4.207 9.06 8.166 18.206 11.391 27.634-19.584 2.06-34.696 17.42-43.497 34.368-1.57-7.12-3.542-14.141-6.206-20.994-2.422-6.228-5.45-11.948-9.406-17.345-3.81-5.2-7.98-10.12-11.613-15.452C12.416 26.405 23.494 14.91 28.764.678"
+                    opacity=".525" transform="scale(0.29,0.28), translate(424,308)"></path>
+                  <path class="layers" data-name="팔꿈치" fill="#83B7D6" fill-rule="nonzero"
+                    d="M44.426.69a164.847 164.847 0 0 1 3.346 11.197c1.35 5.212 2.603 10.483 6.56 14.598 2.621 2.728 5.328 5.406 7.868 8.213-6.86 10.49-14.703 20.377-24.922 27.772-4.57 3.308-9.422 6.335-14.603 8.595-.823-2.093-1.652-4.185-2.618-6.203-3.653-7.63-7.295-15.226-13.26-21.547a162.325 162.325 0 0 1-5.55-6.186c-.102-.498-.21-.994-.316-1.49C9.534 18.512 24.641 2.646 44.426.69"
+                    opacity=".525" transform="scale(0.29,0.26), translate(453,392)"></path>
+                  <path class="layers" data-name="전완" fill="#83B7D6" fill-rule="nonzero"
+                    d="M14.257 28.704C24.77 21.195 32.84 11.187 39.882.466a68.033 68.033 0 0 1 3.52 4.28c6.861 9.162 13.555 18.486 19.693 28.14 4.265 6.707 7.308 14.178 11.21 21.131 8.759 15.602 18.751 30.412 29.433 44.756.617.828 1.223 1.67 1.843 2.502-10.619-3.579-22.664-2.406-33.65-2.593-6.117-.104-12.23.01-18.34.214-4.357-4.162-8.738-8.3-13.028-12.53-8.511-8.391-17.074-16.75-25.204-25.502-4.265-4.593-8.119-9.726-11.3-15.121-1.626-2.757-2.838-5.75-4.025-8.765 5.038-2.183 9.766-5.09 14.223-8.274"
+                    opacity=".525" transform="scale(0.29,0.26), translate(475,429)"></path>
+                  <path class="layers" data-name="손목" fill="#83B7D6" fill-rule="nonzero"
+                    d="M15.981.651c6.437.058 12.894-.02 19.327.204 5.875.204 11.874.77 17.393 2.877.733.922 1.499 1.812 2.337 2.624 7.823 7.595 15.217 15.527 21.62 24.396.281.39.568.774.858 1.155-7.953.455-15.778 2.703-23.17 5.58-5.141 2-10.145 4.347-15.008 6.956a10.375 10.375 0 0 0-.946-1.274c-3.54-4.078-6.69-8.493-10.187-12.61-5.377-6.33-10.645-12.785-16.438-18.718C8.122 8.107 4.374 4.475.602.865 5.726.703 10.852.605 15.982.65"
+                    opacity=".525" transform="scale(0.29,0.27), translate(525,509)"></path>
+                  <path class="layers" data-name="손" fill="#83B7D6" fill-rule="nonzero"
+                    d="M61.3 29.209a75.757 75.757 0 0 0 2.35 3.728c-.148.71-.078 1.685.198 2.238 2.01 4.04 4.009 8.104 6.275 12C57.875 60.84 38.578 65.153 19.977 65.15c-.007-.011-.011-.023-.018-.033-1.73-3.111-3.96-5.967-5.485-9.164-3.424-7.184-7.002-14.352-9.622-21.84-1.7-4.86-1.929-10.259-2.606-15.444-.252-1.92-.592-3.703-1.423-5.361 4.793-2.574 9.722-4.892 14.788-6.862C23.153 3.51 31.139 1.217 39.259.859c3.55 4.445 7.786 8.217 13.165 10.592 1.296.572 2.597 1.136 3.899 1.698.34 5.696 2.044 11.04 4.978 16.06"
+                    opacity=".525" transform="scale(0.29,0.27), translate(562,541)"></path>
+                  <path class="layers" data-name="손가락" fill="#83B7D6" fill-rule="nonzero"
+                    d="M50.574 35.082c.182.306.362.613.548.916 5.08 8.279 10.305 16.477 15.736 24.529 3.499 5.187 6.95 10.348 8.767 16.39.293.976.375 2.644-.179 3.097-.78.638-2.564.976-3.355.502-2.376-1.425-4.925-2.952-6.608-5.072-6.245-7.87-12.162-16-18.221-24.016-1.453-1.923-2.926-3.837-4.512-5.647-.383-.437-1.58-.806-1.832-.577-.496.45-.889 1.39-.781 2.037.156.944.797 1.807 1.222 2.708 2.335 4.948 4.778 9.849 6.951 14.867.982 2.267 1.29 4.817 2.139 7.153 2.099 5.778 4.54 11.439 6.423 17.282.919 2.851 1.18 6.002 1.217 9.024.032 2.581-2.204 3.686-4.362 2.232-1.52-1.024-3.077-2.442-3.84-4.051-2.168-4.569-3.76-9.409-5.9-13.99-3.621-7.753-7.443-15.413-11.282-23.06-1.14-2.272-2.523-4.442-4.004-6.508-.383-.536-1.56-.502-2.371-.73-.221.812-.616 1.625-.608 2.434.008.703.454 1.41.738 2.101 1.64 3.995 3.518 7.91 4.886 11.994 2.453 7.32 4.69 14.717 6.835 22.134.845 2.923 1.387 5.968 1.712 8.994.208 1.942-1.158 2.562-3.002 2.084-2.655-.689-4.265-2.51-5.253-4.925-1.823-4.46-3.466-8.996-5.376-13.417-3.26-7.55-6.672-15.036-10.015-22.55-.776-1.743-1.343-3.62-2.381-5.186-.517-.78-1.885-.995-2.868-1.465-.16.895-.524 1.807-.447 2.681.42 4.778.96 9.544 1.437 14.318.157 1.57.25 3.146.372 4.72.297 3.806.712 7.607.81 11.417.025.964-.741 2.345-1.554 2.796-.568.316-2.254-.35-2.706-1.051-1.234-1.913-2.56-3.982-2.993-6.16-1.782-8.951-3.228-17.97-4.848-26.954-.18-1-.38-2.04-.733-2.992 18.638-.066 37.908-4.443 50.238-18.059zm5.157-10.647c-2.04-3.23-5.075-4.726-8.272-6.035-.883-.36-2.386.03-3.303.636a85.81 85.81 0 0 1-1.392-2.177c-3.13-5.082-5.049-10.446-5.492-16.254 4.908 2.116 9.82 4.222 14.573 6.644 4.142 2.11 8.407 4.237 11.023 8.602 1.95 3.252 4.537 6.118 6.798 9.188.86 1.169 1.602 2.426 2.396 3.64-4.288 2.72-13.36.459-16.331-4.244z"
+                    opacity=".525" transform="scale(0.29,0.27), translate(580,555)"></path>
+                </g>
 
-                                <g class="arm-right">
-                                    <path class="layers" data-name="어깨" fill="#83B7D6" fill-rule="nonzero"
-                                        d="M75.521.872C71.198 2.57 66.523 2.55 61.86 2.582c-9.217.062-18.148 1.88-25.754 7.302-10.391 7.407-18.258 17.193-24.131 28.461-4.487 8.607-6.66 17.946-6.484 27.66.104 5.676-1.014 10.967-2.612 16.366C1.512 86.989.591 91.808.086 96.617c4.075.308 8.3-.918 12.178-2.684 5.165-2.352 10.717-5.533 14.801-9.516 3.929-3.834 7.132-8.344 10.977-12.26 3.038-3.096 6.597-6.096 10.997-6.75-.038-.253-.083-.505-.117-.758-.648-4.774-.795-9.607-.386-14.408C50.206 30.67 61.1 13.639 75.575.883a844.55 844.55 0 0 0-.054-.011"
-                                        opacity=".525" transform="scale(0.295,0.31), translate(174,190)"></path>
-                                    <path class="layers" data-name="겨드랑이" fill="#83B7D6" fill-rule="nonzero"
-                                        d="M28.36 53.69c.084.016.162.051.23.1-.864-12.742-1.729-25.523-4.108-38.09-.97-5.132-2.436-10.163-3.292-15.314-5.678.79-10.029 5.828-13.592 9.904-2.51 2.87-4.88 5.999-7.645 8.671 5.146 14.305 16.344 25.86 28.408 34.73"
-                                        opacity=".525" transform="scale(0.29,0.31), translate(205,256)"></path>
-                                    <path class="layers" data-name="상완" fill="#83B7D6" fill-rule="nonzero"
-                                        d="M43.17.695a27.332 27.332 0 0 1-2.378 1.94C34.14 7.432 24.688 13.392 15.987 12.668c-.026.275-.056.551-.078.827-.4 4.853-1.688 9.32-3.684 13.62C8.018 36.175 4.058 45.321.833 54.75c19.584 2.06 34.697 17.42 43.498 34.368 1.57-7.12 3.542-14.141 6.206-20.994 2.422-6.228 5.45-11.947 9.405-17.345 3.811-5.2 7.98-10.12 11.614-15.451C59.519 26.423 48.44 14.927 43.17.695"
-                                        opacity=".525" transform="scale(0.31,0.28), translate(148,307)"></path>
-                                    <path class="layers" data-name="팔꿈치" fill="#83B7D6" fill-rule="nonzero"
-                                        d="M18.509.709a164.847 164.847 0 0 0-3.347 11.196c-1.35 5.212-2.603 10.484-6.559 14.598-2.622 2.728-5.329 5.406-7.869 8.213 6.86 10.49 14.704 20.377 24.923 27.772 4.57 3.308 9.421 6.335 14.603 8.596.822-2.094 1.652-4.186 2.618-6.204 3.652-7.63 7.294-15.226 13.26-21.547a162.325 162.325 0 0 0 5.55-6.186c.101-.498.21-.994.315-1.49C53.4 18.532 38.293 2.666 18.51.709"
-                                        opacity=".525" transform="scale(0.29,0.26), translate(139,390)"></path>
-                                    <path class="layers" data-name="전완" fill="#83B7D6" fill-rule="nonzero"
-                                        d="M91.677 28.722C81.167 21.213 73.095 11.205 66.053.485a68.033 68.033 0 0 0-3.52 4.278c-6.862 9.163-13.555 18.487-19.694 28.141-4.264 6.707-7.307 14.178-11.21 21.131-8.758 15.602-18.75 30.412-29.433 44.757-.616.827-1.223 1.67-1.842 2.501 10.619-3.579 22.664-2.405 33.65-2.593 6.116-.104 12.23.011 18.34.214 4.357-4.162 8.738-8.3 13.028-12.53 8.511-8.391 17.073-16.75 25.204-25.502 4.265-4.593 8.118-9.726 11.3-15.121 1.626-2.756 2.838-5.75 4.024-8.765-5.037-2.183-9.765-5.09-14.223-8.274"
-                                        opacity=".525" transform="scale(0.27,0.28), translate(84,393)"></path>
-                                    <path class="layers" data-name="손목" fill="#83B7D6" fill-rule="nonzero"
-                                        d="M61.953.67C55.517.727 49.06.649 42.626.873c-5.874.204-11.874.77-17.392 2.877-.733.922-1.5 1.812-2.337 2.624C15.074 13.97 7.68 21.901 1.277 30.77a54.7 54.7 0 0 1-.859 1.155c7.954.455 15.779 2.704 23.17 5.58 5.142 2 10.145 4.347 15.009 6.956.273-.433.585-.858.946-1.274 3.54-4.077 6.69-8.492 10.187-12.61 5.376-6.33 10.644-12.785 16.438-18.718C69.813 8.126 73.56 4.493 77.332.883 72.208.72 67.082.623 61.953.67"
-                                        opacity=".525" transform="scale(0.29,0.27), translate(52,510)"></path>
-                                    <path class="layers" data-name="손" fill="#83B7D6" fill-rule="nonzero"
-                                        d="M.812 47.194C13.06 60.857 32.357 65.17 50.958 65.167c.006-.01.01-.023.017-.033 1.73-3.111 3.96-5.966 5.485-9.165 3.425-7.182 7.002-14.35 9.622-21.838 1.701-4.86 1.93-10.26 2.607-15.444.251-1.921.592-3.704 1.422-5.362-4.792-2.573-9.722-4.892-14.787-6.862C47.782 3.528 39.796 1.235 31.675.878c-3.549 4.444-7.786 8.216-13.164 10.59a512.966 512.966 0 0 1-3.899 1.699c-.34 5.696-2.044 11.04-4.978 16.06a75.991 75.991 0 0 1-2.349 3.729c.147.708.077 1.684-.198 2.237-2.01 4.04-4.009 8.104-6.275 12.001"
-                                        opacity=".525" transform="scale(0.29,0.27), translate(22,542)"></path>
-                                    <path class="layers" data-name="손가락" fill="#83B7D6" fill-rule="nonzero"
-                                        d="M25.28 35.088c12.33 13.616 31.6 17.994 50.238 18.059-.352.952-.553 1.993-.733 2.992-1.62 8.985-3.065 18.003-4.848 26.955-.433 2.177-1.759 4.246-2.992 6.159-.452.701-2.139 1.367-2.707 1.051-.813-.451-1.579-1.832-1.554-2.795.099-3.81.513-7.612.81-11.418.124-1.574.216-3.15.373-4.72.477-4.774 1.015-9.54 1.436-14.318.077-.874-.287-1.786-.447-2.681-.983.47-2.35.686-2.867 1.465-1.04 1.566-1.606 3.443-2.381 5.186-3.344 7.514-6.755 15-10.016 22.55-1.91 4.42-3.553 8.957-5.376 13.417-.988 2.414-2.598 4.236-5.253 4.925-1.843.478-3.21-.142-3.001-2.084.325-3.026.866-6.07 1.711-8.994 2.145-7.417 4.382-14.814 6.835-22.133 1.37-4.086 3.247-8 4.886-11.995.284-.691.73-1.398.738-2.1.008-.81-.387-1.623-.607-2.435-.812.228-1.988.194-2.372.73-1.481 2.066-2.864 4.236-4.004 6.507-3.838 7.649-7.66 15.308-11.281 23.06-2.141 4.582-3.733 9.422-5.9 13.99-.764 1.61-2.321 3.028-3.84 4.052-2.16 1.454-4.395.35-4.362-2.232.038-3.022.298-6.173 1.216-9.024 1.883-5.843 4.325-11.504 6.424-17.281.848-2.337 1.156-4.887 2.138-7.154 2.173-5.018 4.616-9.92 6.951-14.867.426-.9 1.066-1.764 1.223-2.708.107-.647-.286-1.588-.782-2.037-.252-.228-1.448.14-1.831.577-1.587 1.81-3.06 3.724-4.512 5.647-6.06 8.017-11.977 16.147-18.221 24.016-1.684 2.12-4.233 3.647-6.609 5.072-.79.474-2.575.136-3.355-.502-.553-.453-.472-2.12-.178-3.097 1.816-6.042 5.268-11.203 8.766-16.39 5.431-8.052 10.657-16.25 15.737-24.53.186-.302.366-.61.547-.915zm-5.156-10.647c-2.972 4.703-12.043 6.965-16.331 4.245.794-1.215 1.534-2.472 2.395-3.641 2.26-3.07 4.85-5.936 6.799-9.188 2.615-4.365 6.88-6.492 11.023-8.602C28.762 4.834 33.675 2.727 38.582.61c-.443 5.808-2.36 11.173-5.492 16.254a83.127 83.127 0 0 1-1.391 2.177c-.918-.605-2.42-.996-3.304-.635-3.197 1.308-6.23 2.803-8.271 6.034z"
-                                        opacity=".525" transform="scale(0.29,0.27), translate(0,556)"></path>
-                                </g>
+                <g class="arm-right">
+                  <path class="layers" data-name="어깨" fill="#83B7D6" fill-rule="nonzero"
+                    d="M75.521.872C71.198 2.57 66.523 2.55 61.86 2.582c-9.217.062-18.148 1.88-25.754 7.302-10.391 7.407-18.258 17.193-24.131 28.461-4.487 8.607-6.66 17.946-6.484 27.66.104 5.676-1.014 10.967-2.612 16.366C1.512 86.989.591 91.808.086 96.617c4.075.308 8.3-.918 12.178-2.684 5.165-2.352 10.717-5.533 14.801-9.516 3.929-3.834 7.132-8.344 10.977-12.26 3.038-3.096 6.597-6.096 10.997-6.75-.038-.253-.083-.505-.117-.758-.648-4.774-.795-9.607-.386-14.408C50.206 30.67 61.1 13.639 75.575.883a844.55 844.55 0 0 0-.054-.011"
+                    opacity=".525" transform="scale(0.295,0.31), translate(174,190)"></path>
+                  <path class="layers" data-name="겨드랑이" fill="#83B7D6" fill-rule="nonzero"
+                    d="M28.36 53.69c.084.016.162.051.23.1-.864-12.742-1.729-25.523-4.108-38.09-.97-5.132-2.436-10.163-3.292-15.314-5.678.79-10.029 5.828-13.592 9.904-2.51 2.87-4.88 5.999-7.645 8.671 5.146 14.305 16.344 25.86 28.408 34.73"
+                    opacity=".525" transform="scale(0.29,0.31), translate(205,256)"></path>
+                  <path class="layers" data-name="상완" fill="#83B7D6" fill-rule="nonzero"
+                    d="M43.17.695a27.332 27.332 0 0 1-2.378 1.94C34.14 7.432 24.688 13.392 15.987 12.668c-.026.275-.056.551-.078.827-.4 4.853-1.688 9.32-3.684 13.62C8.018 36.175 4.058 45.321.833 54.75c19.584 2.06 34.697 17.42 43.498 34.368 1.57-7.12 3.542-14.141 6.206-20.994 2.422-6.228 5.45-11.947 9.405-17.345 3.811-5.2 7.98-10.12 11.614-15.451C59.519 26.423 48.44 14.927 43.17.695"
+                    opacity=".525" transform="scale(0.31,0.28), translate(148,307)"></path>
+                  <path class="layers" data-name="팔꿈치" fill="#83B7D6" fill-rule="nonzero"
+                    d="M18.509.709a164.847 164.847 0 0 0-3.347 11.196c-1.35 5.212-2.603 10.484-6.559 14.598-2.622 2.728-5.329 5.406-7.869 8.213 6.86 10.49 14.704 20.377 24.923 27.772 4.57 3.308 9.421 6.335 14.603 8.596.822-2.094 1.652-4.186 2.618-6.204 3.652-7.63 7.294-15.226 13.26-21.547a162.325 162.325 0 0 0 5.55-6.186c.101-.498.21-.994.315-1.49C53.4 18.532 38.293 2.666 18.51.709"
+                    opacity=".525" transform="scale(0.29,0.26), translate(139,390)"></path>
+                  <path class="layers" data-name="전완" fill="#83B7D6" fill-rule="nonzero"
+                    d="M91.677 28.722C81.167 21.213 73.095 11.205 66.053.485a68.033 68.033 0 0 0-3.52 4.278c-6.862 9.163-13.555 18.487-19.694 28.141-4.264 6.707-7.307 14.178-11.21 21.131-8.758 15.602-18.75 30.412-29.433 44.757-.616.827-1.223 1.67-1.842 2.501 10.619-3.579 22.664-2.405 33.65-2.593 6.116-.104 12.23.011 18.34.214 4.357-4.162 8.738-8.3 13.028-12.53 8.511-8.391 17.073-16.75 25.204-25.502 4.265-4.593 8.118-9.726 11.3-15.121 1.626-2.756 2.838-5.75 4.024-8.765-5.037-2.183-9.765-5.09-14.223-8.274"
+                    opacity=".525" transform="scale(0.27,0.28), translate(84,393)"></path>
+                  <path class="layers" data-name="손목" fill="#83B7D6" fill-rule="nonzero"
+                    d="M61.953.67C55.517.727 49.06.649 42.626.873c-5.874.204-11.874.77-17.392 2.877-.733.922-1.5 1.812-2.337 2.624C15.074 13.97 7.68 21.901 1.277 30.77a54.7 54.7 0 0 1-.859 1.155c7.954.455 15.779 2.704 23.17 5.58 5.142 2 10.145 4.347 15.009 6.956.273-.433.585-.858.946-1.274 3.54-4.077 6.69-8.492 10.187-12.61 5.376-6.33 10.644-12.785 16.438-18.718C69.813 8.126 73.56 4.493 77.332.883 72.208.72 67.082.623 61.953.67"
+                    opacity=".525" transform="scale(0.29,0.27), translate(52,510)"></path>
+                  <path class="layers" data-name="손" fill="#83B7D6" fill-rule="nonzero"
+                    d="M.812 47.194C13.06 60.857 32.357 65.17 50.958 65.167c.006-.01.01-.023.017-.033 1.73-3.111 3.96-5.966 5.485-9.165 3.425-7.182 7.002-14.35 9.622-21.838 1.701-4.86 1.93-10.26 2.607-15.444.251-1.921.592-3.704 1.422-5.362-4.792-2.573-9.722-4.892-14.787-6.862C47.782 3.528 39.796 1.235 31.675.878c-3.549 4.444-7.786 8.216-13.164 10.59a512.966 512.966 0 0 1-3.899 1.699c-.34 5.696-2.044 11.04-4.978 16.06a75.991 75.991 0 0 1-2.349 3.729c.147.708.077 1.684-.198 2.237-2.01 4.04-4.009 8.104-6.275 12.001"
+                    opacity=".525" transform="scale(0.29,0.27), translate(22,542)"></path>
+                  <path class="layers" data-name="손가락" fill="#83B7D6" fill-rule="nonzero"
+                    d="M25.28 35.088c12.33 13.616 31.6 17.994 50.238 18.059-.352.952-.553 1.993-.733 2.992-1.62 8.985-3.065 18.003-4.848 26.955-.433 2.177-1.759 4.246-2.992 6.159-.452.701-2.139 1.367-2.707 1.051-.813-.451-1.579-1.832-1.554-2.795.099-3.81.513-7.612.81-11.418.124-1.574.216-3.15.373-4.72.477-4.774 1.015-9.54 1.436-14.318.077-.874-.287-1.786-.447-2.681-.983.47-2.35.686-2.867 1.465-1.04 1.566-1.606 3.443-2.381 5.186-3.344 7.514-6.755 15-10.016 22.55-1.91 4.42-3.553 8.957-5.376 13.417-.988 2.414-2.598 4.236-5.253 4.925-1.843.478-3.21-.142-3.001-2.084.325-3.026.866-6.07 1.711-8.994 2.145-7.417 4.382-14.814 6.835-22.133 1.37-4.086 3.247-8 4.886-11.995.284-.691.73-1.398.738-2.1.008-.81-.387-1.623-.607-2.435-.812.228-1.988.194-2.372.73-1.481 2.066-2.864 4.236-4.004 6.507-3.838 7.649-7.66 15.308-11.281 23.06-2.141 4.582-3.733 9.422-5.9 13.99-.764 1.61-2.321 3.028-3.84 4.052-2.16 1.454-4.395.35-4.362-2.232.038-3.022.298-6.173 1.216-9.024 1.883-5.843 4.325-11.504 6.424-17.281.848-2.337 1.156-4.887 2.138-7.154 2.173-5.018 4.616-9.92 6.951-14.867.426-.9 1.066-1.764 1.223-2.708.107-.647-.286-1.588-.782-2.037-.252-.228-1.448.14-1.831.577-1.587 1.81-3.06 3.724-4.512 5.647-6.06 8.017-11.977 16.147-18.221 24.016-1.684 2.12-4.233 3.647-6.609 5.072-.79.474-2.575.136-3.355-.502-.553-.453-.472-2.12-.178-3.097 1.816-6.042 5.268-11.203 8.766-16.39 5.431-8.052 10.657-16.25 15.737-24.53.186-.302.366-.61.547-.915zm-5.156-10.647c-2.972 4.703-12.043 6.965-16.331 4.245.794-1.215 1.534-2.472 2.395-3.641 2.26-3.07 4.85-5.936 6.799-9.188 2.615-4.365 6.88-6.492 11.023-8.602C28.762 4.834 33.675 2.727 38.582.61c-.443 5.808-2.36 11.173-5.492 16.254a83.127 83.127 0 0 1-1.391 2.177c-.918-.605-2.42-.996-3.304-.635-3.197 1.308-6.23 2.803-8.271 6.034z"
+                    opacity=".525" transform="scale(0.29,0.27), translate(0,556)"></path>
+                </g>
 
-                                <g class="leg-left">
-                                    <path class="layers" data-name="사타구니" fill="#83B7D6" fill-rule="nonzero"
-                                        d="M25.685 12.594C14.355 20.662 6.507 31.892.118 44.044A.487.487 0 0 1 0 44.19c14.442-2.605 27.591-11.604 38.276-21.194 6.158-5.527 11.828-11.61 16.97-18.09A127.838 127.838 0 0 0 58.52.565c-11.502 2.44-23.09 5.09-32.836 12.03"
-                                        opacity=".525" transform="scale(0.25,0.25), translate(401,614)"></path>
-                                    <path class="layers" data-name="허벅지" fill="#83B7D6" fill-rule="nonzero"
-                                        d="M22.095 65.158c8.209-4.411 16.083-9.402 24.096-14.151C64.932 39.899 82.14 12.765 100.375.849c.681 8.372 2.324 32.022 3.172 40.378.878 8.66 1.621 17.45 3.756 25.843 4.818 18.94 9.867 37.812 12.732 57.17 1.836 12.405 3.823 24.821 4.846 37.306.88 10.735.62 21.573.623 32.366.003 12.977-.218 25.955-.414 38.931-.051 3.401-.395 6.797-.548 10.197-.041.9.033 1.828.216 2.71 1.927 9.274 4.425 18.467 5.706 27.828.378 2.771.712 5.548 1.024 8.328-3.984-1.801-8.245-2.988-12.546-3.765-12.789-2.308-26.188-1.408-38.85 1.255-6.165 1.297-12.467 3.04-18.415 5.527-.778-3.134-.99-6.434-1.718-9.596-2.332-10.125-4.833-20.21-7.192-30.33-1.797-7.706-3.857-15.282-7.496-22.4a103.07 103.07 0 0 1-5.822-13.767c-6.565-19.36-12.597-38.907-19.497-58.144-5.052-14.084-8.052-28.418-8.694-43.315-.283-6.555-.602-13.111-1.09-19.654-.31-4.139-1.523-8.048-4.702-10.963-.635-.582-1.864-.712-2.82-.714a21.477 21.477 0 0 0-1.925.103c-.007-.046-.017-.092-.023-.138.471-.723 15.144-7.487 21.397-10.847"
-                                        opacity=".525" transform="scale(0.28,0.28), translate(341,520)"></path>
-                                    <path class="layers" data-name="무릎" fill="#83B7D6" fill-rule="nonzero"
-                                        d="M60.922 58.52c-7.784 3.777-15.86 7.183-24.408 8.75-5.592 1.025-11.109 1.179-16.508.62a996.727 996.727 0 0 0-3.028-12.031C14.485 46.178 10.82 36.94 6.602 27.858c-2.78-5.989-4.675-12.42-6.606-18.76-.012-.045-.022-.09-.035-.134A90.202 90.202 0 0 1 3.102 7.72C14.955 3.305 27.749 1.04 40.385.87c9.78-.132 20.263.918 29.234 5.181 1.07 9.792 1.806 19.63 2.67 29.445.37 4.219 1.399 8.162 3.392 11.884.25.467.51.932.773 1.397-4.547 4.08-10.095 7.105-15.532 9.744"
-                                        opacity=".525" transform="scale(0.28,0.30), translate(403,744)"></path>
-                                    <path class="layers" data-name="정강이" fill="#83B7D6" fill-rule="nonzero"
-                                        d="M75.75 155.827c-15.314 6.271-31.927 10.477-48.561 11.638-1.25-5.517-2.568-11.021-3.891-16.52-2.915-12.117-5.414-24.416-10.848-35.722-5.136-10.686-7.546-21.947-8.585-33.612-.598-6.7-1.485-13.402-1.595-20.112-.11-6.702.606-13.416.92-20.127.127-2.708.675-5.533.124-8.112A491.284 491.284 0 0 0 .267 19.956c9.432.792 18.947-.582 28.003-3.892a131.735 131.735 0 0 0 17.906-8.129c3.784-2.07 7.527-4.414 10.78-7.285 1.531 2.648 3.128 5.28 4.072 8.124 3.189 9.613 6.227 19.302 8.698 29.118 2.124 8.443 3.68 17.06 4.928 25.68 1.044 7.213 1.6 14.536 1.775 21.825.163 6.798-.636 13.614-.708 20.425-.174 16.665.045 33.337.028 50.005"
-                                        opacity=".525" transform="scale(0.27,0.30), translate(440,793)"></path>
-                                    <path class="layers" data-name="발목" fill="#83B7D6" fill-rule="nonzero"
-                                        d="M45.047 75.68c-.627 5.856-.205 11.482 1.57 16.907-9.005 3.562-18.363 6.293-27.88 8.025-4.372.796-8.835 1.395-13.316 1.674a76.22 76.22 0 0 1 1.567-16.498c1.253-6.099 2.726-12.195 2.079-18.507-.466-4.546-.897-9.098-1.538-13.62-1.284-9.042-2.406-18.123-4.14-27.083a479.04 479.04 0 0 0-2.98-14.13C16.962 11.275 33.49 7.1 48.75.897c-.03 18.238-.36 36.472-1.827 54.687a764.124 764.124 0 0 1-1.875 20.096"
-                                        opacity=".525" transform="scale(0.28,0.25), translate(449,1140)"></path>
-                                    <path class="layers" data-name="발" fill="#83B7D6" fill-rule="nonzero"
-                                        d="M44.593 99.268c-11.953 3.851-24.793 5.897-37.328 6.269-1.125.034-2.276.056-3.445.06-1.196-2.684-1.548-5.536-.796-8.507C5.61 86.866 4.9 76.716 2.874 66.444c-1.79-9.07-1.787-18.293-.968-27.559.5-5.674.661-11.568-.307-17.14A79.822 79.822 0 0 1 .444 10.27c4.287-.266 8.558-.817 12.752-1.555C23.017 6.985 32.66 4.188 41.941.52a37.037 37.037 0 0 0 2.016 4.63c2.522 4.853 3.917 9.942 2.699 15.62-.91 4.24-2.504 8.492-1.254 13.007 2.77 10.006 4.93 20.214 9.708 29.552 4.042 7.898 8.231 15.721 12.195 23.658.332.665.505 1.407.632 2.173-7.184 4.53-15.294 7.514-23.344 10.108"
-                                        opacity=".525" transform="scale(0.28,0.26), translate(455,1185)"></path>
-                                    <path class="layers" data-name="발가락" fill="#83B7D6" fill-rule="nonzero"
-                                        d="M25.167 14.073c6.369-1.188 12.618-2.78 18.754-4.858C50.879 6.858 57.834 4.118 64.095.232c.082.607.164 1.215.3 1.8.533 2.307.562 4.989 1.813 6.824 3.16 4.637 2.767 9.649 2.32 14.668-.178 1.984-1.203 3.954-2.137 5.78-.37.723-1.553 1.469-2.347 1.45-2.093-.049-2.694 1.026-3.097 2.792-.649 2.851-1.694 3.435-4.58 3.496-.862.017-2.165.56-2.49 1.235-2.08 4.308-2.289 4.458-6.972 4.165-.788-.05-2.085.4-2.353.984-1.25 2.726-3.485 3.518-6.122 3.331-2.757-.195-5.254-1.046-6.073-4.206-.09-.347-.45-.622-.815-1.1-.495.52-.914.885-1.24 1.318-3.313 4.38-7.182 5.162-12.002 2.49-6.258-3.47-11.13-7.732-9.784-15.904.112-.677-.31-1.852-.85-2.163-4.126-2.386-5.513-6.616-7.341-10.52 8.357 0 16.777-1.095 24.842-2.6"
-                                        opacity=".525" transform="scale(0.28,0.25), translate(457,1326)"></path>
-                                </g>
+                <g class="leg-left">
+                  <path class="layers" data-name="사타구니" fill="#83B7D6" fill-rule="nonzero"
+                    d="M25.685 12.594C14.355 20.662 6.507 31.892.118 44.044A.487.487 0 0 1 0 44.19c14.442-2.605 27.591-11.604 38.276-21.194 6.158-5.527 11.828-11.61 16.97-18.09A127.838 127.838 0 0 0 58.52.565c-11.502 2.44-23.09 5.09-32.836 12.03"
+                    opacity=".525" transform="scale(0.25,0.25), translate(401,614)"></path>
+                  <path class="layers" data-name="허벅지" fill="#83B7D6" fill-rule="nonzero"
+                    d="M22.095 65.158c8.209-4.411 16.083-9.402 24.096-14.151C64.932 39.899 82.14 12.765 100.375.849c.681 8.372 2.324 32.022 3.172 40.378.878 8.66 1.621 17.45 3.756 25.843 4.818 18.94 9.867 37.812 12.732 57.17 1.836 12.405 3.823 24.821 4.846 37.306.88 10.735.62 21.573.623 32.366.003 12.977-.218 25.955-.414 38.931-.051 3.401-.395 6.797-.548 10.197-.041.9.033 1.828.216 2.71 1.927 9.274 4.425 18.467 5.706 27.828.378 2.771.712 5.548 1.024 8.328-3.984-1.801-8.245-2.988-12.546-3.765-12.789-2.308-26.188-1.408-38.85 1.255-6.165 1.297-12.467 3.04-18.415 5.527-.778-3.134-.99-6.434-1.718-9.596-2.332-10.125-4.833-20.21-7.192-30.33-1.797-7.706-3.857-15.282-7.496-22.4a103.07 103.07 0 0 1-5.822-13.767c-6.565-19.36-12.597-38.907-19.497-58.144-5.052-14.084-8.052-28.418-8.694-43.315-.283-6.555-.602-13.111-1.09-19.654-.31-4.139-1.523-8.048-4.702-10.963-.635-.582-1.864-.712-2.82-.714a21.477 21.477 0 0 0-1.925.103c-.007-.046-.017-.092-.023-.138.471-.723 15.144-7.487 21.397-10.847"
+                    opacity=".525" transform="scale(0.28,0.28), translate(341,520)"></path>
+                  <path class="layers" data-name="무릎" fill="#83B7D6" fill-rule="nonzero"
+                    d="M60.922 58.52c-7.784 3.777-15.86 7.183-24.408 8.75-5.592 1.025-11.109 1.179-16.508.62a996.727 996.727 0 0 0-3.028-12.031C14.485 46.178 10.82 36.94 6.602 27.858c-2.78-5.989-4.675-12.42-6.606-18.76-.012-.045-.022-.09-.035-.134A90.202 90.202 0 0 1 3.102 7.72C14.955 3.305 27.749 1.04 40.385.87c9.78-.132 20.263.918 29.234 5.181 1.07 9.792 1.806 19.63 2.67 29.445.37 4.219 1.399 8.162 3.392 11.884.25.467.51.932.773 1.397-4.547 4.08-10.095 7.105-15.532 9.744"
+                    opacity=".525" transform="scale(0.28,0.30), translate(403,744)"></path>
+                  <path class="layers" data-name="정강이" fill="#83B7D6" fill-rule="nonzero"
+                    d="M75.75 155.827c-15.314 6.271-31.927 10.477-48.561 11.638-1.25-5.517-2.568-11.021-3.891-16.52-2.915-12.117-5.414-24.416-10.848-35.722-5.136-10.686-7.546-21.947-8.585-33.612-.598-6.7-1.485-13.402-1.595-20.112-.11-6.702.606-13.416.92-20.127.127-2.708.675-5.533.124-8.112A491.284 491.284 0 0 0 .267 19.956c9.432.792 18.947-.582 28.003-3.892a131.735 131.735 0 0 0 17.906-8.129c3.784-2.07 7.527-4.414 10.78-7.285 1.531 2.648 3.128 5.28 4.072 8.124 3.189 9.613 6.227 19.302 8.698 29.118 2.124 8.443 3.68 17.06 4.928 25.68 1.044 7.213 1.6 14.536 1.775 21.825.163 6.798-.636 13.614-.708 20.425-.174 16.665.045 33.337.028 50.005"
+                    opacity=".525" transform="scale(0.27,0.30), translate(440,793)"></path>
+                  <path class="layers" data-name="발목" fill="#83B7D6" fill-rule="nonzero"
+                    d="M45.047 75.68c-.627 5.856-.205 11.482 1.57 16.907-9.005 3.562-18.363 6.293-27.88 8.025-4.372.796-8.835 1.395-13.316 1.674a76.22 76.22 0 0 1 1.567-16.498c1.253-6.099 2.726-12.195 2.079-18.507-.466-4.546-.897-9.098-1.538-13.62-1.284-9.042-2.406-18.123-4.14-27.083a479.04 479.04 0 0 0-2.98-14.13C16.962 11.275 33.49 7.1 48.75.897c-.03 18.238-.36 36.472-1.827 54.687a764.124 764.124 0 0 1-1.875 20.096"
+                    opacity=".525" transform="scale(0.28,0.25), translate(449,1140)"></path>
+                  <path class="layers" data-name="발" fill="#83B7D6" fill-rule="nonzero"
+                    d="M44.593 99.268c-11.953 3.851-24.793 5.897-37.328 6.269-1.125.034-2.276.056-3.445.06-1.196-2.684-1.548-5.536-.796-8.507C5.61 86.866 4.9 76.716 2.874 66.444c-1.79-9.07-1.787-18.293-.968-27.559.5-5.674.661-11.568-.307-17.14A79.822 79.822 0 0 1 .444 10.27c4.287-.266 8.558-.817 12.752-1.555C23.017 6.985 32.66 4.188 41.941.52a37.037 37.037 0 0 0 2.016 4.63c2.522 4.853 3.917 9.942 2.699 15.62-.91 4.24-2.504 8.492-1.254 13.007 2.77 10.006 4.93 20.214 9.708 29.552 4.042 7.898 8.231 15.721 12.195 23.658.332.665.505 1.407.632 2.173-7.184 4.53-15.294 7.514-23.344 10.108"
+                    opacity=".525" transform="scale(0.28,0.26), translate(455,1185)"></path>
+                  <path class="layers" data-name="발가락" fill="#83B7D6" fill-rule="nonzero"
+                    d="M25.167 14.073c6.369-1.188 12.618-2.78 18.754-4.858C50.879 6.858 57.834 4.118 64.095.232c.082.607.164 1.215.3 1.8.533 2.307.562 4.989 1.813 6.824 3.16 4.637 2.767 9.649 2.32 14.668-.178 1.984-1.203 3.954-2.137 5.78-.37.723-1.553 1.469-2.347 1.45-2.093-.049-2.694 1.026-3.097 2.792-.649 2.851-1.694 3.435-4.58 3.496-.862.017-2.165.56-2.49 1.235-2.08 4.308-2.289 4.458-6.972 4.165-.788-.05-2.085.4-2.353.984-1.25 2.726-3.485 3.518-6.122 3.331-2.757-.195-5.254-1.046-6.073-4.206-.09-.347-.45-.622-.815-1.1-.495.52-.914.885-1.24 1.318-3.313 4.38-7.182 5.162-12.002 2.49-6.258-3.47-11.13-7.732-9.784-15.904.112-.677-.31-1.852-.85-2.163-4.126-2.386-5.513-6.616-7.341-10.52 8.357 0 16.777-1.095 24.842-2.6"
+                    opacity=".525" transform="scale(0.28,0.25), translate(457,1326)"></path>
+                </g>
 
-                                <g class="leg-right">
-                                    <path class="layers" data-name="사타구니" fill="#83B7D6" fill-rule="nonzero"
-                                        d="M38.382 11.441C27.732 2.576 13.99 1.491.76.55a5.378 5.378 0 0 1-.172.039 1760.47 1760.47 0 0 0 24.385 14.999c8.196 4.946 16.349 10.002 24.943 14.24 3.204 1.579 6.457 3.056 9.785 4.253-2.295-3.801-5.265-7.225-8.275-10.437-4.07-4.346-8.469-8.393-13.044-12.202"
-                                        opacity=".525" transform="scale(0.25,0.25), translate(298,619)"></path>
-                                    <path class="layers" data-name="허벅지" fill="#83B7D6" fill-rule="nonzero"
-                                        d="M129.632 57.832c-7.021-1.78-13.776-5.29-20.029-8.65-8.208-4.41-16.083-9.401-24.096-14.15C66.765 23.923 48.493 12.054 30.259.138c-.682 8.373-1.26 16.757-2.107 25.112-.88 8.66-1.623 17.45-3.758 25.843-4.818 18.94-9.866 37.812-12.731 57.17-1.836 12.405-3.823 24.822-4.846 37.306-.88 10.735-.621 21.573-.623 32.366-.004 12.977.218 25.955.414 38.931.051 3.401.395 6.797.548 10.198.04.9-.033 1.828-.216 2.709-1.927 9.274-4.425 18.467-5.705 27.828-.38 2.772-.714 5.548-1.025 8.328 3.983-1.801 8.245-2.988 12.546-3.764 12.789-2.309 26.188-1.408 38.85 1.254 6.165 1.298 12.467 3.04 18.415 5.527.778-3.134.99-6.434 1.718-9.596 2.331-10.124 4.833-20.21 7.193-30.329 1.797-7.706 3.856-15.283 7.495-22.4a103.04 103.04 0 0 0 5.822-13.768c6.565-19.36 12.596-38.907 19.497-58.144 5.052-14.084 8.052-28.418 8.694-43.314.282-6.555.602-13.112 1.09-19.655.31-4.138 1.523-8.048 4.702-10.962.636-.583 1.864-.712 2.82-.714.638-.002 1.28.045 1.925.102l.023-.137a68.837 68.837 0 0 1-1.368-2.198"
-                                        opacity=".525" transform="scale(0.28,0.28), translate(206,534)"></path>
-                                    <path class="layers" data-name="무릎" fill="#83B7D6" fill-rule="nonzero"
-                                        d="M15.776 58.544c7.784 3.778 15.86 7.183 24.408 8.75 5.592 1.025 11.109 1.18 16.508.62a996.774 996.774 0 0 1 3.028-12.03c2.493-9.682 6.158-18.918 10.376-28.002 2.78-5.989 4.675-12.419 6.605-18.76.014-.044.023-.09.036-.133a90.2 90.2 0 0 0-3.141-1.245C61.743 3.33 48.949 1.064 36.313.894 26.533.761 16.05 1.81 7.08 6.073c-1.07 9.792-1.807 19.63-2.67 29.445-.37 4.22-1.399 8.163-3.392 11.884-.25.468-.51.933-.773 1.397 4.547 4.08 10.095 7.106 15.532 9.744"
-                                        opacity=".525" transform="scale(0.28,0.30), translate(199,742)"></path>
-                                    <path class="layers" data-name="정강이" fill="#83B7D6" fill-rule="nonzero"
-                                        d="M.949 155.851c15.313 6.271 31.925 10.478 48.56 11.639 1.251-5.518 2.568-11.022 3.891-16.521 2.915-12.116 5.414-24.416 10.848-35.722 5.136-10.686 7.546-21.946 8.585-33.612.598-6.7 1.485-13.401 1.594-20.112.11-6.702-.605-13.416-.92-20.127-.127-2.708-.673-5.533-.123-8.112A491.283 491.283 0 0 1 76.43 19.98c-9.432.792-18.947-.582-28.003-3.891a131.708 131.708 0 0 1-17.906-8.13c-3.785-2.07-7.528-4.414-10.78-7.285-1.531 2.649-3.129 5.28-4.072 8.125C12.481 18.41 9.443 28.1 6.972 37.917c-2.123 8.442-3.68 17.059-4.928 25.679C1 70.81.444 78.132.269 85.42c-.163 6.799.636 13.614.707 20.425.174 16.666-.044 33.337-.027 50.005"
-                                        opacity=".525" transform="scale(0.28,0.30), translate(178,791)"></path>
-                                    <path class="layers" data-name="발목" fill="#83B7D6" fill-rule="nonzero"
-                                        d="M4.651 75.704c.628 5.856.204 11.482-1.57 16.908 9.005 3.56 18.363 6.292 27.88 8.024 4.372.796 8.835 1.395 13.315 1.674a76.19 76.19 0 0 0-1.567-16.498c-1.251-6.098-2.725-12.194-2.078-18.507.466-4.545.897-9.098 1.538-13.62 1.283-9.042 2.406-18.123 4.14-27.083a477.447 477.447 0 0 1 2.98-14.129C32.737 11.298 16.209 7.123.949.92c.03 18.239.36 36.473 1.827 54.687A764.127 764.127 0 0 0 4.65 75.704"
-                                        opacity=".525" transform="scale(0.28,0.25), translate(178,1136)"></path>
-                                    <path class="layers" data-name="발" fill="#83B7D6" fill-rule="nonzero"
-                                        d="M24.105 99.292c11.953 3.852 24.793 5.897 37.328 6.27 1.125.033 2.276.055 3.445.06 1.196-2.685 1.548-5.536.796-8.508-2.587-10.224-1.877-20.374.15-30.645 1.79-9.07 1.787-18.293.968-27.56-.5-5.674-.66-11.568.306-17.14a79.823 79.823 0 0 0 1.156-11.474c-4.287-.267-8.558-.818-12.752-1.556C45.682 7.01 36.038 4.212 26.757.544a37.033 37.033 0 0 1-2.016 4.63c-2.522 4.853-3.917 9.943-2.7 15.62.91 4.24 2.505 8.493 1.255 13.007-2.77 10.006-4.93 20.214-9.708 29.552C9.546 71.25 5.358 79.075 1.392 87.01c-.332.665-.504 1.408-.63 2.173 7.183 4.53 15.292 7.514 23.343 10.108"
-                                        opacity=".525" transform="scale(0.28,0.27), translate(155,1137)"></path>
-                                    <path class="layers" data-name="발가락" fill="#83B7D6" fill-rule="nonzero"
-                                        d="M44.53 14.097c-6.368-1.188-12.617-2.78-18.753-4.858C18.82 6.882 11.865 4.143 5.603.256c-.082.607-.165 1.215-.3 1.8C4.77 4.364 4.741 7.045 3.49 8.88.33 13.518.723 18.53 1.17 23.548c.177 1.984 1.203 3.954 2.137 5.78.37.723 1.552 1.47 2.347 1.45 2.093-.048 2.695 1.026 3.097 2.793.649 2.85 1.694 3.434 4.58 3.495.862.018 2.165.56 2.49 1.236 2.08 4.307 2.289 4.457 6.972 4.164.788-.05 2.085.4 2.353.984 1.251 2.726 3.485 3.518 6.122 3.331 2.757-.194 5.254-1.046 6.072-4.206.09-.346.45-.622.815-1.1.496.521.915.885 1.242 1.318 3.311 4.381 7.181 5.163 12.001 2.49 6.258-3.47 11.129-7.732 9.785-15.903-.112-.678.31-1.852.849-2.164 4.127-2.386 5.513-6.616 7.341-10.52-8.356 0-16.777-1.094-24.842-2.599"
-                                        opacity=".525" transform="scale(0.28,0.26), translate(150,1274)"></path>
-                                </g>
-                            </g>
-                        </g>
+                <g class="leg-right">
+                  <path class="layers" data-name="사타구니" fill="#83B7D6" fill-rule="nonzero"
+                    d="M38.382 11.441C27.732 2.576 13.99 1.491.76.55a5.378 5.378 0 0 1-.172.039 1760.47 1760.47 0 0 0 24.385 14.999c8.196 4.946 16.349 10.002 24.943 14.24 3.204 1.579 6.457 3.056 9.785 4.253-2.295-3.801-5.265-7.225-8.275-10.437-4.07-4.346-8.469-8.393-13.044-12.202"
+                    opacity=".525" transform="scale(0.25,0.25), translate(298,619)"></path>
+                  <path class="layers" data-name="허벅지" fill="#83B7D6" fill-rule="nonzero"
+                    d="M129.632 57.832c-7.021-1.78-13.776-5.29-20.029-8.65-8.208-4.41-16.083-9.401-24.096-14.15C66.765 23.923 48.493 12.054 30.259.138c-.682 8.373-1.26 16.757-2.107 25.112-.88 8.66-1.623 17.45-3.758 25.843-4.818 18.94-9.866 37.812-12.731 57.17-1.836 12.405-3.823 24.822-4.846 37.306-.88 10.735-.621 21.573-.623 32.366-.004 12.977.218 25.955.414 38.931.051 3.401.395 6.797.548 10.198.04.9-.033 1.828-.216 2.709-1.927 9.274-4.425 18.467-5.705 27.828-.38 2.772-.714 5.548-1.025 8.328 3.983-1.801 8.245-2.988 12.546-3.764 12.789-2.309 26.188-1.408 38.85 1.254 6.165 1.298 12.467 3.04 18.415 5.527.778-3.134.99-6.434 1.718-9.596 2.331-10.124 4.833-20.21 7.193-30.329 1.797-7.706 3.856-15.283 7.495-22.4a103.04 103.04 0 0 0 5.822-13.768c6.565-19.36 12.596-38.907 19.497-58.144 5.052-14.084 8.052-28.418 8.694-43.314.282-6.555.602-13.112 1.09-19.655.31-4.138 1.523-8.048 4.702-10.962.636-.583 1.864-.712 2.82-.714.638-.002 1.28.045 1.925.102l.023-.137a68.837 68.837 0 0 1-1.368-2.198"
+                    opacity=".525" transform="scale(0.28,0.28), translate(206,534)"></path>
+                  <path class="layers" data-name="무릎" fill="#83B7D6" fill-rule="nonzero"
+                    d="M15.776 58.544c7.784 3.778 15.86 7.183 24.408 8.75 5.592 1.025 11.109 1.18 16.508.62a996.774 996.774 0 0 1 3.028-12.03c2.493-9.682 6.158-18.918 10.376-28.002 2.78-5.989 4.675-12.419 6.605-18.76.014-.044.023-.09.036-.133a90.2 90.2 0 0 0-3.141-1.245C61.743 3.33 48.949 1.064 36.313.894 26.533.761 16.05 1.81 7.08 6.073c-1.07 9.792-1.807 19.63-2.67 29.445-.37 4.22-1.399 8.163-3.392 11.884-.25.468-.51.933-.773 1.397 4.547 4.08 10.095 7.106 15.532 9.744"
+                    opacity=".525" transform="scale(0.28,0.30), translate(199,742)"></path>
+                  <path class="layers" data-name="정강이" fill="#83B7D6" fill-rule="nonzero"
+                    d="M.949 155.851c15.313 6.271 31.925 10.478 48.56 11.639 1.251-5.518 2.568-11.022 3.891-16.521 2.915-12.116 5.414-24.416 10.848-35.722 5.136-10.686 7.546-21.946 8.585-33.612.598-6.7 1.485-13.401 1.594-20.112.11-6.702-.605-13.416-.92-20.127-.127-2.708-.673-5.533-.123-8.112A491.283 491.283 0 0 1 76.43 19.98c-9.432.792-18.947-.582-28.003-3.891a131.708 131.708 0 0 1-17.906-8.13c-3.785-2.07-7.528-4.414-10.78-7.285-1.531 2.649-3.129 5.28-4.072 8.125C12.481 18.41 9.443 28.1 6.972 37.917c-2.123 8.442-3.68 17.059-4.928 25.679C1 70.81.444 78.132.269 85.42c-.163 6.799.636 13.614.707 20.425.174 16.666-.044 33.337-.027 50.005"
+                    opacity=".525" transform="scale(0.28,0.30), translate(178,791)"></path>
+                  <path class="layers" data-name="발목" fill="#83B7D6" fill-rule="nonzero"
+                    d="M4.651 75.704c.628 5.856.204 11.482-1.57 16.908 9.005 3.56 18.363 6.292 27.88 8.024 4.372.796 8.835 1.395 13.315 1.674a76.19 76.19 0 0 0-1.567-16.498c-1.251-6.098-2.725-12.194-2.078-18.507.466-4.545.897-9.098 1.538-13.62 1.283-9.042 2.406-18.123 4.14-27.083a477.447 477.447 0 0 1 2.98-14.129C32.737 11.298 16.209 7.123.949.92c.03 18.239.36 36.473 1.827 54.687A764.127 764.127 0 0 0 4.65 75.704"
+                    opacity=".525" transform="scale(0.28,0.25), translate(178,1136)"></path>
+                  <path class="layers" data-name="발" fill="#83B7D6" fill-rule="nonzero"
+                    d="M24.105 99.292c11.953 3.852 24.793 5.897 37.328 6.27 1.125.033 2.276.055 3.445.06 1.196-2.685 1.548-5.536.796-8.508-2.587-10.224-1.877-20.374.15-30.645 1.79-9.07 1.787-18.293.968-27.56-.5-5.674-.66-11.568.306-17.14a79.823 79.823 0 0 0 1.156-11.474c-4.287-.267-8.558-.818-12.752-1.556C45.682 7.01 36.038 4.212 26.757.544a37.033 37.033 0 0 1-2.016 4.63c-2.522 4.853-3.917 9.943-2.7 15.62.91 4.24 2.505 8.493 1.255 13.007-2.77 10.006-4.93 20.214-9.708 29.552C9.546 71.25 5.358 79.075 1.392 87.01c-.332.665-.504 1.408-.63 2.173 7.183 4.53 15.292 7.514 23.343 10.108"
+                    opacity=".525" transform="scale(0.28,0.27), translate(155,1137)"></path>
+                  <path class="layers" data-name="발가락" fill="#83B7D6" fill-rule="nonzero"
+                    d="M44.53 14.097c-6.368-1.188-12.617-2.78-18.753-4.858C18.82 6.882 11.865 4.143 5.603.256c-.082.607-.165 1.215-.3 1.8C4.77 4.364 4.741 7.045 3.49 8.88.33 13.518.723 18.53 1.17 23.548c.177 1.984 1.203 3.954 2.137 5.78.37.723 1.552 1.47 2.347 1.45 2.093-.048 2.695 1.026 3.097 2.793.649 2.85 1.694 3.434 4.58 3.495.862.018 2.165.56 2.49 1.236 2.08 4.307 2.289 4.457 6.972 4.164.788-.05 2.085.4 2.353.984 1.251 2.726 3.485 3.518 6.122 3.331 2.757-.194 5.254-1.046 6.072-4.206.09-.346.45-.622.815-1.1.496.521.915.885 1.242 1.318 3.311 4.381 7.181 5.163 12.001 2.49 6.258-3.47 11.129-7.732 9.785-15.903-.112-.678.31-1.852.849-2.164 4.127-2.386 5.513-6.616 7.341-10.52-8.356 0-16.777-1.094-24.842-2.599"
+                    opacity=".525" transform="scale(0.28,0.26), translate(150,1274)"></path>
+                </g>
+              </g>
+            </g>
 
-                        <!-- 뒷모습 그룹 -->
-                        <g id="back-view" class="hidden">
-                            <image xlink:href="back-full-body.png" height="100%" width="100%" x="0" y="0"
-                                class="body-bg-img">
-                            </image>
-                            <g class="zoom-group">
-                                <g class="head">
-                                    <path class="layers" data-name="머리" fill="#83B7D6" fill-rule="nonzero"
-                                        d="M1.402 93.553c1.24 5.152 2.89 10.206 4.397 15.292 1.088 3.668 2.824 6.715 6.927 7.816.674.18 1.366 1.456 1.498 2.31l.145.955c6.68-1.078 13.39-1.989 20.125-2.665 21.155-2.124 43.093-2.13 63.916 2.658.014-.106.03-.21.045-.316.24-1.723.808-2.727 2.563-3.134 2.367-.55 3.836-2.152 4.727-4.399 3.157-7.968 6.49-15.872 6.359-24.704-.028-1.889.643-3.782.68-5.68.061-3.188-.83-4.257-3.958-4.908-1.657-.345-1.365-1.432-1.207-2.477 1.428-9.43.572-18.775-1.06-28.08-3.637-20.715-15.639-34.963-34.55-43.35C65.31-.101 57.903.104 50.636 1.4c-14.55 2.595-25.617 10.623-34.4 22.107C8.646 33.43 6.173 45.13 5.378 57.23c-.407 6.198-.071 12.446-.071 18.715C.488 77.303-.485 78.987.304 84.387c.445 3.046.383 6.195 1.098 9.166"
-                                        opacity=".525" transform="scale(0.26,0.26), translate(310,33)"></path>
-                                </g>
+            <!-- 뒷모습 그룹 -->
+            <g id="back-view" class="hidden">
+              <image xlink:href="back-full-body.png" height="100%" width="100%" x="0" y="0" class="body-bg-img">
+              </image>
+              <g class="zoom-group">
+                <g class="head">
+                  <path class="layers" data-name="머리" fill="#83B7D6" fill-rule="nonzero"
+                    d="M1.402 93.553c1.24 5.152 2.89 10.206 4.397 15.292 1.088 3.668 2.824 6.715 6.927 7.816.674.18 1.366 1.456 1.498 2.31l.145.955c6.68-1.078 13.39-1.989 20.125-2.665 21.155-2.124 43.093-2.13 63.916 2.658.014-.106.03-.21.045-.316.24-1.723.808-2.727 2.563-3.134 2.367-.55 3.836-2.152 4.727-4.399 3.157-7.968 6.49-15.872 6.359-24.704-.028-1.889.643-3.782.68-5.68.061-3.188-.83-4.257-3.958-4.908-1.657-.345-1.365-1.432-1.207-2.477 1.428-9.43.572-18.775-1.06-28.08-3.637-20.715-15.639-34.963-34.55-43.35C65.31-.101 57.903.104 50.636 1.4c-14.55 2.595-25.617 10.623-34.4 22.107C8.646 33.43 6.173 45.13 5.378 57.23c-.407 6.198-.071 12.446-.071 18.715C.488 77.303-.485 78.987.304 84.387c.445 3.046.383 6.195 1.098 9.166"
+                    opacity=".525" transform="scale(0.26,0.26), translate(310,33)"></path>
+                </g>
 
-                                <g class="neck">
-                                    <path class="layers" data-name="뒷목" fill="#83B7D6" fill-rule="nonzero"
-                                        d="M19.597 26.974C13.603 31.746 7.34 36.08.673 39.791a384.197 384.197 0 0 0 22.81 3.9c21.242 2.959 42.896 4.15 64.278 2.08 10.42-1.01 20.857-2.841 30.917-5.831a150.887 150.887 0 0 1-4.113-2.582c-4.939-3.22-9.595-6.88-14.28-10.47-.615-.472-1.035-1.73-.923-2.537.904-6.494 1.982-12.964 2.906-19.456-27.238-6.332-56.334-4.43-83.751.013.98 6.43 1.902 12.872 2.67 19.331.1.851-.802 2.108-1.59 2.735"
-                                        opacity=".525" transform="scale(0.26,0.26), translate(305,150)"></path>
-                                </g>
-                                <g class="arm-left">
-                                    <path class="layers" data-name="어깨" fill="#83B7D6" fill-rule="nonzero"
-                                        d="M100.278 2.494c-6.976 3.174-13.513 7.523-20.719 9.935-12.797 4.284-24.679 10.415-36.717 16.28-7.136 3.476-12.556 8.766-16.944 15.458-5.766 8.792-8.953 18.637-12.769 28.25-2.261 5.696-4.03 11.67-6.966 16.997C3.935 93.46 2.164 97.608.74 101.862c9.498 4.218 18.824 8.83 28.02 13.688 7.188 3.798 14.575 7.29 21.645 11.302 4.907 2.785 9.71 5.957 13.619 10.031.244-.614.48-1.234.701-1.86.78-2.212 1.998-4.276 3.098-6.364.158-.3.398-.56.726-.882.12-3.738.236-7.476.356-11.214.395-12.259.838-24.519 1.622-36.76.683-10.667 1.969-20.718 5.966-30.715 6.95-17.38 18.575-32.285 27.74-48.495-1.303.657-2.619 1.293-3.954 1.9"
-                                        opacity=".525" transform="scale(0.26,0.25), translate(195,204)"></path>
-                                    <path class="layers" data-name="상완" fill="#83B7D6" fill-rule="nonzero"
-                                        d="M77.86 24.6c-6.74-3.665-13.65-7.038-20.44-10.612C48.557 9.322 39.57 4.891 30.423.826c-1.565 4.865-2.688 9.87-3.519 15.022-.577 3.578-2.685 7.086-4.72 10.22C15.32 36.642 9.798 47.881 4.813 59.421c-1.133 2.624-2.396 5.155-3.887 7.54 6.511 1.797 12.838 4.212 18.823 7.361 10.574 5.562 19.448 13.155 26.928 22.005 3.685-4.469 7.463-8.866 11.203-13.289 7.125-8.427 14.538-16.619 21.448-25.216 5.483-6.82 10.835-13.787 14.277-21.932-4.416-4.73-10.093-8.218-15.744-11.29"
-                                        opacity=".525" transform="scale(0.255,0.29), translate(168,263)"></path>
-                                    <path class="layers" data-name="팔꿈치" fill="#83B7D6" fill-rule="nonzero"
-                                        d="M53.43 67.08l.297-1.127c2.941-11.099 9.18-20.399 16.06-29.282a298.064 298.064 0 0 1 5.31-6.638c-3.95-4.677-8.304-9.004-13.101-12.838C52.36 9.492 41.206 4.108 29.35.858c-1.608 2.439-3.476 4.715-5.722 6.763C14.362 16.069 6.889 25.75.648 36.25c15.146 13.773 33.23 24.741 52.783 30.83"
-                                        opacity=".525" transform="scale(0.26,0.29), translate(132,330)"></path>
-                                    <path class="layers" data-name="전완" fill="#83B7D6" fill-rule="nonzero"
-                                        d="M42.123.143c-3.98 6.803-7.457 13.938-10.574 21.299-7.458 17.61-14.227 35.516-21.89 53.033C6.78 81.053 3.633 87.52.367 93.928c7.636 7.41 16.07 14.011 24.974 19.82 2.59 1.69 5.23 3.32 7.92 4.874a577.185 577.185 0 0 1 9.644-12.711c8.335-10.707 17.063-21.126 25.021-32.103 8.646-11.926 16.699-24.287 24.779-36.61 1.182-1.804 1.875-3.974 2.466-6.146-19.64-6.11-37.812-17.09-53.049-30.909"
-                                        opacity=".525" transform="scale(0.25,0.26), translate(94,412)"></path>
-                                    <path class="layers" data-name="손목" fill="#83B7D6" fill-rule="nonzero"
-                                        d="M38.375 65.762c.805-4.428 2.795-8.35 4.948-12.191 5.487-9.793 11.729-19.085 18.337-28.124a169.371 169.371 0 0 1-7.829-4.826c-8.88-5.797-17.31-12.37-24.946-19.745-2.359 4.61-4.776 9.19-7.206 13.755-3.148 5.918-7.239 11.33-10.844 17.01C8.444 35.41 6.04 39.18 3.851 43.066A88.91 88.91 0 0 1 .06 49.195c11.131 8.4 24.414 13.615 38.316 16.567"
-                                        opacity=".525" transform="scale(0.26,0.25), translate(60,527)"></path>
-                                    <path class="layers" data-name="손등" fill="#83B7D6" fill-rule="nonzero"
-                                        d="M28.498.031c-2.564 3.7-5.418 7.178-8.607 10.398-1.078 1.089-2.666 1.702-4.07 2.434-1.095.572-2.193 1.138-3.29 1.707-.881 3.673-2.722 6.93-4.953 10.094C5.02 28.29 2.715 31.86.58 35.702c.119-.137.238-.274.352-.418.346-.435.856-.739 1.669-1.422-.125.762-.09 1.09-.227 1.31-.723 1.16-1.443 2.32-2.164 3.482.025.026.053.046.074.082 5.253 8.825 14.585 14.611 23.69 18.832a108.37 108.37 0 0 0 23.54 7.778c6.094-10.355 13.789-19.925 17.088-31.738 1.306-4.675 2.255-9.582 2.404-14.413.027-.888.112-1.753.235-2.6C53.303 13.644 39.8 8.494 28.498.03"
-                                        opacity=".525" transform="scale(0.26,0.26), translate(30,555)"></path>
-                                    <path class="layers" data-name="손가락" fill="#83B7D6" fill-rule="nonzero"
-                                        d="M18.029 24.96c-.391-.077-1-1.538-.792-1.808 3.895-5.055 7.897-10.027 11.882-15.011.102-.127.265-.213.413-.29C34.464 5.3 39.4 2.751 44.33.194c-1.04 3.6-3.054 6.78-5.291 9.89-2.695 3.745-4.97 7.522-7.143 11.59l-.59 1.099c-2.117 1.504-4.596 2.338-7.172 2.817-1.939.361-4.093-.237-6.105-.63zm61.94 26.305c-2.342 3.871-5.915 6.931-4.71 12.106.035.15-.057.329-.086.495-.866 4.975-1.63 9.971-2.629 14.92-.795 3.944-1.556 7.952-2.988 11.68-.554 1.44-2.914 2.185-4.452 3.247-.56-1.574-1.646-3.166-1.594-4.72.336-10.192.93-20.376 1.393-30.565.033-.734-.305-1.485-.47-2.228-.785.374-1.895.54-2.295 1.161a45.316 45.316 0 0 0-3.323 6.181c-1.187 2.693-2.17 5.479-3.197 8.24-2.845 7.649-5.632 15.32-8.521 22.953-.86 2.27-1.8 4.548-3.034 6.627-1.098 1.85-5.194 3.363-6.447 2.534-2.16-1.43-1.4-3.696-.947-5.537 2.437-9.9 4.861-19.812 7.676-29.608 1.363-4.74 3.603-9.226 5.359-13.859.257-.677.032-1.537.03-2.312-.752.196-1.702.175-2.212.638-.846.767-1.592 1.764-2.059 2.808-3.643 8.15-7.34 16.279-10.74 24.53-1.458 3.542-2.095 7.414-3.393 11.033-.838 2.332-1.923 4.69-3.415 6.638-1.123 1.466-2.698 3.5-5.037 2.494-2.316-.997-1.685-3.382-1.797-5.363-.358-6.39 1.847-12.21 3.613-18.206 2.62-8.896 4.892-17.881 8.877-26.312.947-2 1.737-4.076 2.6-6.116-.854-.022-1.314.189-1.59.542-3.113 3.98-6.191 7.987-9.29 11.98-4.337 5.59-8.544 11.29-13.076 16.719-2.958 3.54-6.456 6.544-11.719 5.275v-3.038c.353-.444.787-.845 1.042-1.34 1.812-3.515 3.334-7.21 5.43-10.543 3.716-5.91 7.888-11.529 11.66-17.405 4.744-7.391 9.365-14.863 14-22.325 5.256 8.582 14.28 14.334 23.19 18.551a108.803 108.803 0 0 0 24.15 8.125z"
-                                        opacity=".525" transform="scale(0.26,0.26), translate(0,570)"></path>
-                                </g>
-                                <g class="arm-right">
-                                    <path class="layers" data-name="어깨" fill="#83B7D6" fill-rule="nonzero"
-                                        d="M4.702 2.456C11.677 5.63 18.214 9.979 25.42 12.39c12.798 4.284 24.68 10.415 36.718 16.28 7.136 3.476 12.555 8.765 16.944 15.457 5.765 8.793 8.952 18.638 12.768 28.25 2.262 5.697 4.031 11.67 6.966 16.998 2.228 4.045 4 8.194 5.425 12.448-9.499 4.218-18.825 8.83-28.02 13.687-7.189 3.798-14.575 7.29-21.645 11.303-4.907 2.784-9.71 5.957-13.62 10.03a50.43 50.43 0 0 1-.7-1.86c-.781-2.212-1.998-4.275-3.098-6.363-.159-.301-.398-.56-.727-.883-.119-3.738-.235-7.476-.356-11.213-.394-12.26-.837-24.52-1.621-36.76-.684-10.668-1.97-20.719-5.966-30.715C21.538 31.67 9.912 16.765.748.555c1.302.657 2.618 1.293 3.954 1.9"
-                                        opacity=".525" transform="scale(0.26,0.25), translate(430,204)"></path>
-                                    <path class="layers" data-name="상완" fill="#83B7D6" fill-rule="nonzero"
-                                        d="M16.12 24.56c6.74-3.664 13.65-7.036 20.44-10.61C45.422 9.284 54.41 4.852 63.556.787c1.564 4.866 2.688 9.87 3.518 15.023.577 3.578 2.685 7.086 4.72 10.22 6.866 10.574 12.388 21.813 17.373 33.353 1.132 2.624 2.396 5.154 3.886 7.54-6.51 1.797-12.837 4.212-18.823 7.36-10.574 5.563-19.448 13.156-26.928 22.005C43.618 91.82 39.841 87.423 36.101 83c-7.125-8.427-14.539-16.619-21.449-25.217C9.17 50.963 3.818 43.996.375 35.851c4.417-4.729 10.093-8.218 15.745-11.29"
-                                        opacity=".525" transform="scale(0.255,0.29), translate(485,263)"></path>
-                                    <path class="layers" data-name="팔꿈치" fill="#83B7D6" fill-rule="nonzero"
-                                        d="M22.549 67.042l-.296-1.127c-2.942-11.1-9.18-20.4-16.06-29.282a298.064 298.064 0 0 0-5.31-6.638c3.949-4.677 8.303-9.004 13.1-12.839C23.62 9.454 34.775 4.07 46.63.82c1.609 2.438 3.477 4.715 5.723 6.762 9.266 8.449 16.738 18.131 22.979 28.63-15.145 13.773-33.23 24.74-52.782 30.83"
-                                        opacity=".525" transform="scale(0.26,0.29), translate(523,330)"></path>
-                                    <path class="layers" data-name="전완" fill="#83B7D6" fill-rule="nonzero"
-                                        d="M53.856.105c3.98 6.802 7.457 13.937 10.575 21.298 7.458 17.61 14.227 35.517 21.89 53.033 2.878 6.578 6.024 13.046 9.29 19.454-7.636 7.409-16.07 14.01-24.973 19.819-2.59 1.69-5.23 3.321-7.92 4.875a577.187 577.187 0 0 0-9.645-12.712C44.74 95.165 36.011 84.747 28.053 73.77c-8.646-11.925-16.7-24.287-24.78-36.61C2.092 35.356 1.4 33.186.809 31.013c19.64-6.11 37.812-17.09 53.048-30.908"
-                                        opacity=".525" transform="scale(0.25,0.26), translate(570,412)"></path>
-                                    <path class="layers" data-name="손목" fill="#83B7D6" fill-rule="nonzero"
-                                        d="M23.604 65.723c-.805-4.427-2.794-8.35-4.947-12.19C13.17 43.74 6.927 34.447.32 25.408a169.372 169.372 0 0 0 7.829-4.826c8.88-5.798 17.31-12.37 24.945-19.745 2.36 4.609 4.777 9.189 7.206 13.754 3.15 5.919 7.24 11.332 10.844 17.01 2.392 3.769 4.795 7.538 6.985 11.426a88.91 88.91 0 0 0 3.791 6.129c-11.13 8.4-24.413 13.615-38.316 16.566"
-                                        opacity=".525" transform="scale(0.26,0.25), translate(610,527)"></path>
-                                    <path class="layers" data-name="손등" fill="#83B7D6" fill-rule="nonzero"
-                                        d="M39.482-.007c2.564 3.7 5.417 7.178 8.607 10.398 1.078 1.088 2.665 1.702 4.069 2.434 1.096.571 2.194 1.137 3.29 1.707.882 3.673 2.722 6.93 4.954 10.093 2.558 3.627 4.863 7.197 6.998 11.039a12.405 12.405 0 0 1-.353-.419c-.345-.434-.855-.738-1.668-1.422.124.763.089 1.09.226 1.31.723 1.16 1.443 2.322 2.165 3.482-.025.027-.054.046-.075.082-5.253 8.825-14.584 14.612-23.689 18.832a108.37 108.37 0 0 1-23.54 7.779C14.372 54.953 6.676 45.382 3.377 33.57 2.072 28.895 1.123 23.988.974 19.157a22.976 22.976 0 0 0-.235-2.6c13.937-2.95 27.44-8.1 38.743-16.564"
-                                        opacity=".525" transform="scale(0.26,0.26), translate(632,555)"></path>
-                                    <path class="layers" data-name="손가락" fill="#83B7D6" fill-rule="nonzero"
-                                        d="M61.95 24.922c-2.012.392-4.166.991-6.105.63-2.575-.48-5.055-1.314-7.17-2.818-.198-.366-.395-.732-.591-1.099-2.173-4.067-4.449-7.845-7.143-11.59-2.237-3.109-4.252-6.29-5.291-9.89 4.93 2.557 9.865 5.105 14.797 7.658.149.077.312.163.413.29 3.986 4.984 7.988 9.956 11.882 15.01.208.271-.4 1.732-.791 1.809zM.012 51.226a108.803 108.803 0 0 0 24.151-8.124c8.909-4.217 17.934-9.97 23.19-18.552 4.635 7.463 9.256 14.934 14 22.326 3.771 5.876 7.944 11.495 11.66 17.404 2.096 3.334 3.618 7.029 5.43 10.545.255.493.69.894 1.042 1.339v3.038c-5.263 1.268-8.762-1.735-11.719-5.276-4.533-5.428-8.74-11.129-13.077-16.719-3.098-3.992-6.177-7.999-9.289-11.98-.276-.353-.736-.563-1.59-.542.862 2.041 1.653 4.116 2.6 6.117 3.985 8.43 6.257 17.416 8.877 26.312 1.766 5.996 3.97 11.816 3.612 18.205-.11 1.981.52 4.367-1.796 5.363-2.34 1.006-3.914-1.028-5.037-2.494-1.493-1.948-2.578-4.305-3.415-6.638-1.298-3.619-1.935-7.49-3.394-11.032-3.399-8.252-7.096-16.38-10.74-24.53-.466-1.044-1.213-2.04-2.059-2.809-.509-.463-1.46-.441-2.211-.637-.002.775-.227 1.634.03 2.312 1.756 4.633 3.996 9.118 5.359 13.859 2.814 9.796 5.238 19.707 7.676 29.608.452 1.84 1.212 4.107-.948 5.537-1.253.828-5.348-.684-6.447-2.535-1.233-2.078-2.174-4.357-3.033-6.626-2.89-7.633-5.676-15.305-8.522-22.954-1.027-2.76-2.01-5.546-3.197-8.239a45.316 45.316 0 0 0-3.323-6.181c-.4-.621-1.51-.787-2.294-1.161-.165.743-.504 1.494-.47 2.228.462 10.189 1.057 20.372 1.393 30.565.051 1.554-1.035 3.145-1.594 4.72-1.538-1.062-3.899-1.808-4.452-3.247C8.992 86.7 8.23 82.69 7.435 78.748c-.998-4.949-1.762-9.945-2.628-14.92-.03-.166-.122-.346-.086-.496 1.205-5.174-2.368-8.234-4.71-12.106z"
-                                        opacity=".525" transform="scale(0.26,0.26), translate(652,571)"></path>
-                                </g>
-                                <g class="torso">
-                                    <path class="layers" data-name="등 상부" fill="#83B7D6" fill-rule="nonzero"
-                                        d="M1.003 130.486c-.501 9.516.867 18.757 2.838 27.947 12.996 1.934 26.09 3.146 39.216 3.805 26.995 1.356 53.977.134 80.976-.349 13.017-.233 26.065-.95 39.08-.913 8.87.025 18.03.569 26.843-.86 2.206-10.082 4.026-20.25 6.05-30.372.1-.5.414-.96.89-1.988-3.719-43.927-10.4-88.566-34.522-126.254-.738-.427-1.475-.856-2.208-1.293-1.347.41-2.699.798-4.057 1.166-20.88 5.654-42.832 6.79-64.357 5.728-18.031-.889-35.972-3.381-53.66-7-.413.224-.83.442-1.247.661-5.114 9.242-11.017 18.011-16.542 27.009-5.207 8.48-10.11 17.241-13.36 26.681-3.6 10.458-4.145 21.265-4.755 32.219-.763 13.678-1.158 27.371-1.595 41.063l.097-.1c.166 1.447.35 2.155.313 2.85"
-                                        opacity=".525" transform="scale(0.26,0.26), translate(266,193)"></path>
-                                    <path class="layers" data-name="등" fill="#83B7D6" fill-rule="nonzero"
-                                        d="M153.889 2.502C102.61 3.19 50.952 7.49 0 0c.553 2.53 1.146 5.057 1.757 7.586 1.013 4.19 1.863 8.42 2.64 12.668 8.315 3.14 16.118 7.736 21.728 14.787 6.04 7.591 8.702 17.096 9.28 26.674.638 10.575-1.262 21.001-6.774 30.141-.155.256-.318.505-.476.758l.211-.001a.454.454 0 0 1 .374-.175c41.623.007 83.24.973 124.863 1-4.586-11.03-6.523-22.993-3.955-34.847 4.053-18.705 13.68-37.888 31.549-45.753a313.152 313.152 0 0 1 2.167-10.613c.04-.177.076-.354.115-.53-9.716 1.518-19.825.676-29.59.807"
-                                        opacity=".525" transform="scale(0.26,0.26), translate(270,356)"></path>
-                                    <path class="layers" data-name="등 하부" fill="#83B7D6" fill-rule="nonzero"
-                                        d="M164.647 21.262c-7.087-3.916-11.834-10.463-15.263-17.666a80.093 80.093 0 0 1-1.18-2.6C106.952.977 65.704.032 24.449 0a.457.457 0 0 1-.365.163c-.803 0-1.604.009-2.404.025C16.722 7.7 9.993 13.68 2.38 18.438c-.07.98-.141 1.962-.221 2.943-.37 4.535-1.06 9.108-2.159 13.532 16.012.89 31.832 3.998 47.75 5.868 16.622 1.953 33.526 2.048 50.247 2.022 8.5-.013 17-.228 25.482-.792 7.861-.524 15.635-1.662 23.47-2.403 9.003-.852 18.047-1.532 26.986-2.918-.968-4.025-1.665-8.107-1.966-12.276-2.532-.845-4.992-1.865-7.322-3.152"
-                                        opacity=".525" transform="scale(0.26,0.26), translate(277,452)"></path>
-                                    <path class="layers" data-name="옆구리" fill="#83B7D6" fill-rule="nonzero"
-                                        d="M4.462 90.039c.114-.073.23-.142.344-.215C13.028 84.524 20.36 77.623 25.123 69c5.267-9.536 6.634-20.331 5.528-31.064-.99-9.595-4.39-18.897-11.115-25.964C14.326 6.499 7.726 2.766.732.078c.89 4.94 1.69 9.902 2.517 14.851 2.174 13.002 2.529 26.164 2.924 39.304.118 3.945-.341 7.907-.537 11.861-.396 7.982-.642 15.975-1.174 23.945"
-                                        opacity=".525" transform="scale(0.26,0.26), translate(274,378)"></path>
-                                    <path class="layers" data-name="옆구리" fill="#83B7D6" fill-rule="nonzero"
-                                        d="M27.526 39.007A323.769 323.769 0 0 1 32.188.641c-8.68 3.96-15.652 10.685-20.67 19.03-2.65 4.405-4.76 9.118-6.473 13.96-2.122 6.003-3.999 12.29-4.556 18.65C-.607 64.787 3.06 77.59 9.343 88.366c3.887 6.67 9.292 11.832 16.476 14.772 1.016.415 2.045.794 3.085 1.145-.013-.217-.029-.435-.039-.654-.356-7.994-.178-16.03-.91-23.985-.656-7.15-1.307-14.231-.853-21.43.402-6.386.03-12.82.424-19.207"
-                                        opacity=".525" transform="scale(0.26,0.26), translate(421,370)"></path>
-                                </g>
-                                <g class="pelvis">
-                                    <path class="layers" data-name="꼬리뼈" fill="#83B7D6" fill-rule="nonzero"
-                                        d="M15.683 14.111c2.149 2.237 3.931 4.753 5.728 7.272 1.071 1.5 2.145 3.003 3.332 4.415.597.71 2.293 3.046 3.223 2.953 1.04-.105 3.348-3.22 4.171-4.018a179.858 179.858 0 0 1 4.08-3.83 216.09 216.09 0 0 1 8.553-7.374c5.102-4.182 10.377-8.146 15.736-11.99-7.934.373-15.88.48-23.824.431C24.43 1.896 12.176 1.702-.03.795c5.332 4.33 10.94 8.349 15.714 13.316"
-                                        opacity=".525" transform="scale(0.26,0.26), translate(336,496)"></path>
-                                    <path class="layers" data-name="엉덩이" fill="#83B7D6" fill-rule="nonzero"
-                                        d="M195.465 53.72c-1.934-6.275-3.81-12.59-5.163-19.021-2.244-10.673-3.932-25.355 5.97-32.651-9.913 1.23-19.851 1.868-29.753 2.914-8.54.9-17.009 1.994-25.593 2.458-12.662 8.63-24.342 17.884-34.627 28.617-.204.214-.507.17-.716 0-5.175-4.207-8.04-10.448-12.617-15.21-5.084-5.29-11.119-9.5-16.754-14.161-4.44-.361-8.87-.813-13.293-1.396C48.537 3.378 34.193.788 19.7.004c-.085.324-.166.648-.256.969-.131.465-.268.928-.4 1.393 4.592 8.067 7.076 17.242 8.32 26.413 2.423 17.871 1.411 37.104-9.288 52.274C13.309 87.81 7.236 93.333.532 98.059c5.498 3.51 11.404 6.35 17.435 8.851 7.084 2.938 14.344 5.423 21.56 8.013 7.048 2.529 13.92 5.375 20.814 8.287 12.216 5.159 24.676 9.454 37.666 11.696-3.372-2.65-6.013-6.198-7.502-10.319-1.992-5.512-1.643-11.945 2.157-16.61 4.459-5.473 12.393-7.226 19.143-6.813 7.18.44 14.875 3.774 15.466 11.904.601 8.261-7.284 14.63-13.025 19.4 9.222-3.581 17.48-1.214 26.68-4.577 9.958-3.64 69.18-24.965 74.168-29.832"
-                                        opacity=".525" transform="scale(0.26,0.26), translate(258,490)"></path>
-                                    <path class="layers" data-name="항문" fill="#83B7D6" fill-rule="nonzero"
-                                        d="M23.57 29.718c5.932-4.925 14.888-12.143 12.272-20.81-2.282-7.56-11.096-9.215-18.02-8.71C11.732.642 5.1 3.08 2.034 8.713c-4.684 8.603.09 18.554 7.514 23.972 1.29-1.873 3.068-3.42 5.231-4.664 2.764-1.59 6.148-1.157 8.345 1.201.151.163.297.332.446.496"
-                                        opacity=".525" transform="scale(0.26,0.26), translate(348,592)"></path>
-                                    <path class="layers" data-name="측면 엉덩이" fill="#83B7D6" fill-rule="nonzero"
-                                        d="M2.72 92.934c13.855-10.232 23.584-24.595 25.224-42.025 1.553-16.519-.087-35.306-8.29-50.192-2.326 7.974-5.001 15.853-7.639 23.734C6.581 40.685 3.062 57.285 1.93 74.39c-.441 6.658-.795 13.328-1.241 19.989.68-.477 1.362-.95 2.03-1.444"
-                                        opacity=".525" transform="scale(0.26,0.26), translate(256,492)"></path>
-                                    <path class="layers" data-name="측면 엉덩이" fill="#83B7D6" fill-rule="nonzero"
-                                        d="M8.246 52.997c2.43 7.444 11.211 32.66 18.68 36.267.615.296-3.484-31.31-4.65-37.754-1.598-8.835-4.54-17.43-6.963-26.112-1.378-4.94-2.694-9.914-4.424-14.734C9.636 7.174 8.506 3.66 7.557.11 2.441 4.105.727 10.533.628 16.927c-.187 12.178 3.876 24.608 7.618 36.07z"
-                                        opacity=".525" transform="scale(0.26,0.26), translate(448,492)"></path>
-                                </g>
-                                <g class="leg-right">
-                                    <path class="layers" data-name="햄스트링" fill="#83B7D6" fill-rule="nonzero"
-                                        d="M18.42 33.91c15.355-4.724 29.857-11.857 44.984-17.244C75.784 12.257 88.528 7.876 99.61.682c.417 6.04.917 12.07 1.642 18.073 1.793 14.808 4.565 29.499 6.957 44.233 2 12.323 3.922 24.662 6.14 36.948 3.585 19.854 4.157 39.916 4.234 59.993.052 13.656-.398 27.319-.82 40.972-.186 6.007 2.369 11.337 3.528 17.005 2.077 10.151 4.203 20.291 6.189 30.46 1.761 9.017 2.104 18.141 2.407 27.277-2.955-.78-5.956-1.377-8.929-1.857-18.937-3.057-38.721-1.855-57.523 1.573-.702.128-1.404.266-2.105.402-3.024-7.456-6.372-14.82-7.184-23.028-.338-3.412-1.413-6.759-2.218-10.119-1.883-7.862-3.735-15.734-5.733-23.568-1.975-7.74-2.658-15.838-6.406-23.09-1.198-2.32-2.536-4.603-3.423-7.044-3.74-10.286-7.452-20.586-10.948-30.957-4.119-12.22-8.149-24.475-11.944-36.8-2.87-9.324-6.162-18.643-7.72-28.216-1.763-10.852-1.8-21.986-2.591-32.996-.41-5.708-.703-11.428-1.279-17.118-.177-1.757-.655-3.333-1.383-4.747a131.102 131.102 0 0 0 17.92-4.168"
-                                        opacity=".525" transform="scale(0.26,0.26), translate(375,595)"></path>
-                                    <path class="layers" data-name="오금" fill="#83B7D6" fill-rule="nonzero"
-                                        d="M66.959 59.237c-15.133 6.095-32.202 11.274-49.23 12.632-1.354-12.737-3.798-25.278-6.552-37.824C8.935 23.835 4.901 14.326 1.1 4.682.961 4.33.82 3.98.678 3.628 12.152 1.38 23.89.289 35.474.154 44.498.05 53.59.564 62.468 2.25c2.155.41 4.316.889 6.454 1.463.076 2.31.154 4.62.254 6.928.303 6.936 1.64 13.735 5.252 20.085 3.788 6.66 6.868 13.631 9.512 20.78a211.197 211.197 0 0 1-16.981 7.731"
-                                        opacity=".525" transform="scale(0.26,0.26), translate(440,870)"></path>
-                                    <path class="layers" data-name="종아리" fill="#83B7D6" fill-rule="nonzero"
-                                        d="M78.989 101.465c-2.346 7.888-2.543 15.927-2.855 24.02l-.062 1.588c-3.945 2.186-8.062 4.057-12.293 5.644-12.872 4.828-26.667 7.451-40.587 8.294a644.71 644.71 0 0 0-1.362-6.48c-1.844-8.557-3.977-17.074-6.487-25.458-1.708-5.702-4.727-11.015-6.396-16.726C3.553 73.9 2.26 54.812 1.797 35.774c-.123-5.076-.471-10.108-.985-15.11 10.444-.838 20.81-3.033 30.811-5.969C43.913 11.088 55.87 6.278 67.288.463 69.23 5.804 70.94 11.24 72.52 16.717c3.435 11.913 6.673 23.868 8.448 36.186 1.531 10.634 2.82 21.289 1.546 32-.665 5.585-1.919 11.163-3.524 16.562"
-                                        opacity=".525" transform="scale(0.26,0.26), translate(455,925)"></path>
-                                    <path class="layers" data-name="발목" fill="#83B7D6" fill-rule="nonzero"
-                                        d="M48.442 75.235c-1.598 9.563.24 18.813 1.783 28.11.13.785.28 1.562.44 2.337a104.08 104.08 0 0 0-26.204 2.095c-5.781 1.21-11.451 2.84-17.052 4.695-.02-2.775.106-5.56.44-8.36.598-5.007 1.118-10.08.992-15.105-.18-7.144-.897-14.28-1.545-21.406-.993-10.915-1.814-21.859-3.287-32.713-.954-7.026-2.221-14.02-3.634-20.98C18.611 12.874 37.158 9.01 53.025.275c-.707 18.283-1.455 36.566-2.403 54.837-.35 6.73-1.07 13.477-2.18 20.123"
-                                        opacity=".525" transform="scale(0.26,0.26), translate(480,1055)"></path>
-                                    <path class="layers" data-name="발" fill="#83B7D6" fill-rule="nonzero"
-                                        d="M3.79 106.26C1.72 102.785-.144 99.213.412 94.954c.664-5.09 1.738-10.126 2.4-15.215.359-2.766.577-5.633.262-8.386-.902-7.9-.683-15.721.44-23.585.748-5.231 1.505-10.55 1.314-15.797-.162-4.434-1.86-8.791-2.563-13.232-1.053-6.662-.759-4.756-.897-11.484 4.955-1.641 9.964-3.103 15.064-4.238A99.985 99.985 0 0 1 42.998.727c1.728 7.756 3.549 6.516 6.395 13.902 2.176 5.649 2.757 11.114 1.209 16.966-.432 1.63-.22 3.778.506 5.306 3.846 8.094 5.685 16.521 5.54 25.486-.048 2.984.662 6.028 1.366 8.964.937 3.908 2.18 7.745 3.353 11.595.275.904.704 1.79 1.214 2.588 2.404 3.755 2.802 7.762 1.931 12.066-.154.764-.218 1.546-.259 2.333-18.824 7.506-40.132 9.45-60.463 6.327z"
-                                        opacity=".525" transform="scale(0.26,0.27), translate(488,1120)"></path>
-                                    <path class="layers" data-name="발가락" fill="#83B7D6" fill-rule="nonzero"
-                                        d="M0 6.086C20.082 8.934 41.144 7.2 60 0c-.045 1.012-.102 2.023-.325 2.997-.531 2.316-1.292 4.65-2.394 6.758-1.098 2.101-3.15 2.54-5.436 1.581-.427-.178-.909-.231-1.327-.333-3.003 4.826-4.208 5.276-7.734 3.392-1.52 1.436-2.711 3.398-4.368 3.892-1.674.498-3.808-.46-6.053-.833L29.977 21h-5.35l-3.986-5.072-7.2 5.072h-1.46c-1.052-.661-2.082-1.361-3.162-1.978C4.53 16.57.437 14.024 1.054 8.218c.06-.579-.51-1.254-.87-1.835L0 6.086"
-                                        opacity=".525" transform="scale(0.26,0.27), translate(492,1223)"></path>
-                                </g>
-                                <g class="leg-left">
-                                    <path class="layers" data-name="햄스트링" fill="#83B7D6" fill-rule="nonzero"
-                                        d="M111.788 33.91c-15.355-4.724-29.857-11.857-44.985-17.244C54.423 12.257 41.68 7.876 30.598.682c-.416 6.04-.916 12.07-1.642 18.073C27.164 33.563 24.392 48.254 22 62.988c-2 12.323-3.921 24.662-6.14 36.948-3.584 19.854-4.156 39.916-4.233 59.993-.053 13.656.397 27.319.82 40.972.185 6.007-2.37 11.337-3.528 17.005-2.077 10.151-4.203 20.291-6.189 30.46C.967 257.382.624 266.506.321 275.642c2.955-.78 5.956-1.377 8.93-1.857 18.937-3.057 38.72-1.855 57.523 1.573.702.128 1.403.266 2.105.402 3.024-7.456 6.372-14.82 7.183-23.028.338-3.412 1.413-6.759 2.218-10.119 1.884-7.862 3.735-15.734 5.733-23.568 1.975-7.74 2.659-15.838 6.406-23.09 1.199-2.32 2.537-4.603 3.423-7.044 3.74-10.286 7.452-20.586 10.948-30.957 4.12-12.22 8.15-24.475 11.944-36.8 2.871-9.324 6.163-18.643 7.72-28.216 1.764-10.852 1.8-21.986 2.592-32.996.41-5.708.702-11.428 1.278-17.118.178-1.757.655-3.333 1.384-4.747a131.102 131.102 0 0 1-17.92-4.168"
-                                        opacity=".525" transform="scale(0.26,0.26), translate(222,595)"></path>
-                                    <path class="layers" data-name="오금" fill="#83B7D6" fill-rule="nonzero"
-                                        d="M17.249 59.237c15.133 6.095 32.201 11.274 49.23 12.632 1.354-12.737 3.797-25.278 6.551-37.824 2.243-10.21 6.276-19.719 10.078-29.363.139-.352.28-.703.421-1.054C72.056 1.38 60.318.289 48.733.154 39.71.05 30.617.564 21.74 2.25c-2.155.41-4.317.889-6.455 1.463-.076 2.31-.154 4.62-.254 6.928-.302 6.936-1.639 13.735-5.251 20.085-3.788 6.66-6.868 13.631-9.513 20.78a211.197 211.197 0 0 0 16.982 7.731"
-                                        opacity=".525" transform="scale(0.26,0.26), translate(208,870)"></path>
-                                    <path class="layers" data-name="종아리" fill="#83B7D6" fill-rule="nonzero"
-                                        d="M4.219 101.465c2.346 7.888 2.543 15.927 2.854 24.02.02.53.042 1.059.063 1.588 3.944 2.186 8.062 4.057 12.293 5.644 12.872 4.828 26.666 7.451 40.586 8.294.443-2.163.898-4.323 1.362-6.48 1.844-8.557 3.978-17.074 6.488-25.458 1.708-5.702 4.727-11.015 6.396-16.726 5.393-18.447 6.686-37.535 7.149-56.573.124-5.076.472-10.108.986-15.11-10.444-.838-20.81-3.033-30.812-5.969C39.294 11.088 27.338 6.278 15.92.463c-1.942 5.341-3.65 10.777-5.23 16.254C7.252 28.63 4.014 40.585 2.24 52.903.709 63.537-.58 74.192.695 84.903c.665 5.585 1.918 11.163 3.524 16.562"
-                                        opacity=".525" transform="scale(0.26,0.26), translate(190,925)"></path>
-                                    <path class="layers" data-name="발목" fill="#83B7D6" fill-rule="nonzero"
-                                        d="M4.766 75.235c1.597 9.563-.24 18.813-1.783 28.11a61.69 61.69 0 0 1-.44 2.337 104.08 104.08 0 0 1 26.203 2.095c5.782 1.21 11.452 2.84 17.053 4.695.019-2.775-.107-5.56-.44-8.36-.599-5.007-1.118-10.08-.992-15.105.179-7.144.896-14.28 1.544-21.406.993-10.915 1.815-21.859 3.287-32.713.954-7.026 2.222-14.02 3.634-20.98C34.596 12.874 16.05 9.01.182.275.89 18.558 1.639 36.84 2.587 55.112c.35 6.73 1.07 13.477 2.18 20.123"
-                                        opacity=".525" transform="scale(0.26,0.26), translate(198,1055)"></path>
-                                    <path class="layers" data-name="발" fill="#83B7D6" fill-rule="nonzero"
-                                        d="M62.2 106.542c2.105-3.546 4.001-7.19 3.436-11.537-.675-5.193-1.768-10.33-2.44-15.524-.366-2.822-.588-5.747-.268-8.557.918-8.06.695-16.04-.448-24.064-.76-5.337-1.53-10.765-1.336-16.118.165-4.524 1.893-8.97 2.607-13.5 1.072-6.798 1.745-3.125 1.885-9.99-5.04-1.675-10.136-3.167-15.324-4.325A101.414 101.414 0 0 0 23.288.59C21.53 8.505 13.005 24.387 14.58 30.36c.439 1.663.224 3.855-.515 5.414-3.912 8.258-5.783 16.857-5.635 26.004.049 3.045-.674 6.15-1.39 9.146-.954 3.988-2.219 7.903-3.411 11.83-.28.923-.716 1.827-1.236 2.64C-.052 89.227-.457 93.315.43 97.706c.157.78.222 1.578.264 2.38 19.149 7.66 40.825 9.643 61.506 6.457z"
-                                        opacity=".525" transform="scale(0.26,0.27), translate(175,1120)"></path>
-                                    <path class="layers" data-name="발가락" fill="#83B7D6" fill-rule="nonzero"
-                                        d="M61 6.376C40.583 9.36 19.17 7.543 0 0c.045 1.06.104 2.119.33 3.14.54 2.426 1.314 4.87 2.434 7.08 1.117 2.201 3.203 2.66 5.527 1.656.434-.187.924-.242 1.35-.349 3.052 5.056 4.277 5.527 7.862 3.554 1.545 1.504 2.756 3.56 4.441 4.077 1.701.521 3.871-.483 6.154-.873L30.523 22h5.44l4.052-5.313L47.335 22h1.484c1.07-.693 2.117-1.426 3.215-2.072 4.362-2.569 8.522-5.236 7.895-11.32-.062-.605.518-1.312.884-1.92L61 6.375"
-                                        opacity=".525" transform="scale(0.26,0.27), translate(178,1223)"></path>
-                                </g>
-                            </g>
-                        </g>
-                    </svg>
-                </div>
-            </div>
-            <div class="map-controls">
-                <button id="flip-btn" class="btn">앞/뒤 뒤집기</button>
-            </div>
+                <g class="neck">
+                  <path class="layers" data-name="뒷목" fill="#83B7D6" fill-rule="nonzero"
+                    d="M19.597 26.974C13.603 31.746 7.34 36.08.673 39.791a384.197 384.197 0 0 0 22.81 3.9c21.242 2.959 42.896 4.15 64.278 2.08 10.42-1.01 20.857-2.841 30.917-5.831a150.887 150.887 0 0 1-4.113-2.582c-4.939-3.22-9.595-6.88-14.28-10.47-.615-.472-1.035-1.73-.923-2.537.904-6.494 1.982-12.964 2.906-19.456-27.238-6.332-56.334-4.43-83.751.013.98 6.43 1.902 12.872 2.67 19.331.1.851-.802 2.108-1.59 2.735"
+                    opacity=".525" transform="scale(0.26,0.26), translate(305,150)"></path>
+                </g>
+                <g class="arm-left">
+                  <path class="layers" data-name="어깨" fill="#83B7D6" fill-rule="nonzero"
+                    d="M100.278 2.494c-6.976 3.174-13.513 7.523-20.719 9.935-12.797 4.284-24.679 10.415-36.717 16.28-7.136 3.476-12.556 8.766-16.944 15.458-5.766 8.792-8.953 18.637-12.769 28.25-2.261 5.696-4.03 11.67-6.966 16.997C3.935 93.46 2.164 97.608.74 101.862c9.498 4.218 18.824 8.83 28.02 13.688 7.188 3.798 14.575 7.29 21.645 11.302 4.907 2.785 9.71 5.957 13.619 10.031.244-.614.48-1.234.701-1.86.78-2.212 1.998-4.276 3.098-6.364.158-.3.398-.56.726-.882.12-3.738.236-7.476.356-11.214.395-12.259.838-24.519 1.622-36.76.683-10.667 1.969-20.718 5.966-30.715 6.95-17.38 18.575-32.285 27.74-48.495-1.303.657-2.619 1.293-3.954 1.9"
+                    opacity=".525" transform="scale(0.26,0.25), translate(195,204)"></path>
+                  <path class="layers" data-name="상완" fill="#83B7D6" fill-rule="nonzero"
+                    d="M77.86 24.6c-6.74-3.665-13.65-7.038-20.44-10.612C48.557 9.322 39.57 4.891 30.423.826c-1.565 4.865-2.688 9.87-3.519 15.022-.577 3.578-2.685 7.086-4.72 10.22C15.32 36.642 9.798 47.881 4.813 59.421c-1.133 2.624-2.396 5.155-3.887 7.54 6.511 1.797 12.838 4.212 18.823 7.361 10.574 5.562 19.448 13.155 26.928 22.005 3.685-4.469 7.463-8.866 11.203-13.289 7.125-8.427 14.538-16.619 21.448-25.216 5.483-6.82 10.835-13.787 14.277-21.932-4.416-4.73-10.093-8.218-15.744-11.29"
+                    opacity=".525" transform="scale(0.255,0.29), translate(168,263)"></path>
+                  <path class="layers" data-name="팔꿈치" fill="#83B7D6" fill-rule="nonzero"
+                    d="M53.43 67.08l.297-1.127c2.941-11.099 9.18-20.399 16.06-29.282a298.064 298.064 0 0 1 5.31-6.638c-3.95-4.677-8.304-9.004-13.101-12.838C52.36 9.492 41.206 4.108 29.35.858c-1.608 2.439-3.476 4.715-5.722 6.763C14.362 16.069 6.889 25.75.648 36.25c15.146 13.773 33.23 24.741 52.783 30.83"
+                    opacity=".525" transform="scale(0.26,0.29), translate(132,330)"></path>
+                  <path class="layers" data-name="전완" fill="#83B7D6" fill-rule="nonzero"
+                    d="M42.123.143c-3.98 6.803-7.457 13.938-10.574 21.299-7.458 17.61-14.227 35.516-21.89 53.033C6.78 81.053 3.633 87.52.367 93.928c7.636 7.41 16.07 14.011 24.974 19.82 2.59 1.69 5.23 3.32 7.92 4.874a577.185 577.185 0 0 1 9.644-12.711c8.335-10.707 17.063-21.126 25.021-32.103 8.646-11.926 16.699-24.287 24.779-36.61 1.182-1.804 1.875-3.974 2.466-6.146-19.64-6.11-37.812-17.09-53.049-30.909"
+                    opacity=".525" transform="scale(0.25,0.26), translate(94,412)"></path>
+                  <path class="layers" data-name="손목" fill="#83B7D6" fill-rule="nonzero"
+                    d="M38.375 65.762c.805-4.428 2.795-8.35 4.948-12.191 5.487-9.793 11.729-19.085 18.337-28.124a169.371 169.371 0 0 1-7.829-4.826c-8.88-5.797-17.31-12.37-24.946-19.745-2.359 4.61-4.776 9.19-7.206 13.755-3.148 5.918-7.239 11.33-10.844 17.01C8.444 35.41 6.04 39.18 3.851 43.066A88.91 88.91 0 0 1 .06 49.195c11.131 8.4 24.414 13.615 38.316 16.567"
+                    opacity=".525" transform="scale(0.26,0.25), translate(60,527)"></path>
+                  <path class="layers" data-name="손등" fill="#83B7D6" fill-rule="nonzero"
+                    d="M28.498.031c-2.564 3.7-5.418 7.178-8.607 10.398-1.078 1.089-2.666 1.702-4.07 2.434-1.095.572-2.193 1.138-3.29 1.707-.881 3.673-2.722 6.93-4.953 10.094C5.02 28.29 2.715 31.86.58 35.702c.119-.137.238-.274.352-.418.346-.435.856-.739 1.669-1.422-.125.762-.09 1.09-.227 1.31-.723 1.16-1.443 2.32-2.164 3.482.025.026.053.046.074.082 5.253 8.825 14.585 14.611 23.69 18.832a108.37 108.37 0 0 0 23.54 7.778c6.094-10.355 13.789-19.925 17.088-31.738 1.306-4.675 2.255-9.582 2.404-14.413.027-.888.112-1.753.235-2.6C53.303 13.644 39.8 8.494 28.498.03"
+                    opacity=".525" transform="scale(0.26,0.26), translate(30,555)"></path>
+                  <path class="layers" data-name="손가락" fill="#83B7D6" fill-rule="nonzero"
+                    d="M18.029 24.96c-.391-.077-1-1.538-.792-1.808 3.895-5.055 7.897-10.027 11.882-15.011.102-.127.265-.213.413-.29C34.464 5.3 39.4 2.751 44.33.194c-1.04 3.6-3.054 6.78-5.291 9.89-2.695 3.745-4.97 7.522-7.143 11.59l-.59 1.099c-2.117 1.504-4.596 2.338-7.172 2.817-1.939.361-4.093-.237-6.105-.63zm61.94 26.305c-2.342 3.871-5.915 6.931-4.71 12.106.035.15-.057.329-.086.495-.866 4.975-1.63 9.971-2.629 14.92-.795 3.944-1.556 7.952-2.988 11.68-.554 1.44-2.914 2.185-4.452 3.247-.56-1.574-1.646-3.166-1.594-4.72.336-10.192.93-20.376 1.393-30.565.033-.734-.305-1.485-.47-2.228-.785.374-1.895.54-2.295 1.161a45.316 45.316 0 0 0-3.323 6.181c-1.187 2.693-2.17 5.479-3.197 8.24-2.845 7.649-5.632 15.32-8.521 22.953-.86 2.27-1.8 4.548-3.034 6.627-1.098 1.85-5.194 3.363-6.447 2.534-2.16-1.43-1.4-3.696-.947-5.537 2.437-9.9 4.861-19.812 7.676-29.608 1.363-4.74 3.603-9.226 5.359-13.859.257-.677.032-1.537.03-2.312-.752.196-1.702.175-2.212.638-.846.767-1.592 1.764-2.059 2.808-3.643 8.15-7.34 16.279-10.74 24.53-1.458 3.542-2.095 7.414-3.393 11.033-.838 2.332-1.923 4.69-3.415 6.638-1.123 1.466-2.698 3.5-5.037 2.494-2.316-.997-1.685-3.382-1.797-5.363-.358-6.39 1.847-12.21 3.613-18.206 2.62-8.896 4.892-17.881 8.877-26.312.947-2 1.737-4.076 2.6-6.116-.854-.022-1.314.189-1.59.542-3.113 3.98-6.191 7.987-9.29 11.98-4.337 5.59-8.544 11.29-13.076 16.719-2.958 3.54-6.456 6.544-11.719 5.275v-3.038c.353-.444.787-.845 1.042-1.34 1.812-3.515 3.334-7.21 5.43-10.543 3.716-5.91 7.888-11.529 11.66-17.405 4.744-7.391 9.365-14.863 14-22.325 5.256 8.582 14.28 14.334 23.19 18.551a108.803 108.803 0 0 0 24.15 8.125z"
+                    opacity=".525" transform="scale(0.26,0.26), translate(0,570)"></path>
+                </g>
+                <g class="arm-right">
+                  <path class="layers" data-name="어깨" fill="#83B7D6" fill-rule="nonzero"
+                    d="M4.702 2.456C11.677 5.63 18.214 9.979 25.42 12.39c12.798 4.284 24.68 10.415 36.718 16.28 7.136 3.476 12.555 8.765 16.944 15.457 5.765 8.793 8.952 18.638 12.768 28.25 2.262 5.697 4.031 11.67 6.966 16.998 2.228 4.045 4 8.194 5.425 12.448-9.499 4.218-18.825 8.83-28.02 13.687-7.189 3.798-14.575 7.29-21.645 11.303-4.907 2.784-9.71 5.957-13.62 10.03a50.43 50.43 0 0 1-.7-1.86c-.781-2.212-1.998-4.275-3.098-6.363-.159-.301-.398-.56-.727-.883-.119-3.738-.235-7.476-.356-11.213-.394-12.26-.837-24.52-1.621-36.76-.684-10.668-1.97-20.719-5.966-30.715C21.538 31.67 9.912 16.765.748.555c1.302.657 2.618 1.293 3.954 1.9"
+                    opacity=".525" transform="scale(0.26,0.25), translate(430,204)"></path>
+                  <path class="layers" data-name="상완" fill="#83B7D6" fill-rule="nonzero"
+                    d="M16.12 24.56c6.74-3.664 13.65-7.036 20.44-10.61C45.422 9.284 54.41 4.852 63.556.787c1.564 4.866 2.688 9.87 3.518 15.023.577 3.578 2.685 7.086 4.72 10.22 6.866 10.574 12.388 21.813 17.373 33.353 1.132 2.624 2.396 5.154 3.886 7.54-6.51 1.797-12.837 4.212-18.823 7.36-10.574 5.563-19.448 13.156-26.928 22.005C43.618 91.82 39.841 87.423 36.101 83c-7.125-8.427-14.539-16.619-21.449-25.217C9.17 50.963 3.818 43.996.375 35.851c4.417-4.729 10.093-8.218 15.745-11.29"
+                    opacity=".525" transform="scale(0.255,0.29), translate(485,263)"></path>
+                  <path class="layers" data-name="팔꿈치" fill="#83B7D6" fill-rule="nonzero"
+                    d="M22.549 67.042l-.296-1.127c-2.942-11.1-9.18-20.4-16.06-29.282a298.064 298.064 0 0 0-5.31-6.638c3.949-4.677 8.303-9.004 13.1-12.839C23.62 9.454 34.775 4.07 46.63.82c1.609 2.438 3.477 4.715 5.723 6.762 9.266 8.449 16.738 18.131 22.979 28.63-15.145 13.773-33.23 24.74-52.782 30.83"
+                    opacity=".525" transform="scale(0.26,0.29), translate(523,330)"></path>
+                  <path class="layers" data-name="전완" fill="#83B7D6" fill-rule="nonzero"
+                    d="M53.856.105c3.98 6.802 7.457 13.937 10.575 21.298 7.458 17.61 14.227 35.517 21.89 53.033 2.878 6.578 6.024 13.046 9.29 19.454-7.636 7.409-16.07 14.01-24.973 19.819-2.59 1.69-5.23 3.321-7.92 4.875a577.187 577.187 0 0 0-9.645-12.712C44.74 95.165 36.011 84.747 28.053 73.77c-8.646-11.925-16.7-24.287-24.78-36.61C2.092 35.356 1.4 33.186.809 31.013c19.64-6.11 37.812-17.09 53.048-30.908"
+                    opacity=".525" transform="scale(0.25,0.26), translate(570,412)"></path>
+                  <path class="layers" data-name="손목" fill="#83B7D6" fill-rule="nonzero"
+                    d="M23.604 65.723c-.805-4.427-2.794-8.35-4.947-12.19C13.17 43.74 6.927 34.447.32 25.408a169.372 169.372 0 0 0 7.829-4.826c8.88-5.798 17.31-12.37 24.945-19.745 2.36 4.609 4.777 9.189 7.206 13.754 3.15 5.919 7.24 11.332 10.844 17.01 2.392 3.769 4.795 7.538 6.985 11.426a88.91 88.91 0 0 0 3.791 6.129c-11.13 8.4-24.413 13.615-38.316 16.566"
+                    opacity=".525" transform="scale(0.26,0.25), translate(610,527)"></path>
+                  <path class="layers" data-name="손등" fill="#83B7D6" fill-rule="nonzero"
+                    d="M39.482-.007c2.564 3.7 5.417 7.178 8.607 10.398 1.078 1.088 2.665 1.702 4.069 2.434 1.096.571 2.194 1.137 3.29 1.707.882 3.673 2.722 6.93 4.954 10.093 2.558 3.627 4.863 7.197 6.998 11.039a12.405 12.405 0 0 1-.353-.419c-.345-.434-.855-.738-1.668-1.422.124.763.089 1.09.226 1.31.723 1.16 1.443 2.322 2.165 3.482-.025.027-.054.046-.075.082-5.253 8.825-14.584 14.612-23.689 18.832a108.37 108.37 0 0 1-23.54 7.779C14.372 54.953 6.676 45.382 3.377 33.57 2.072 28.895 1.123 23.988.974 19.157a22.976 22.976 0 0 0-.235-2.6c13.937-2.95 27.44-8.1 38.743-16.564"
+                    opacity=".525" transform="scale(0.26,0.26), translate(632,555)"></path>
+                  <path class="layers" data-name="손가락" fill="#83B7D6" fill-rule="nonzero"
+                    d="M61.95 24.922c-2.012.392-4.166.991-6.105.63-2.575-.48-5.055-1.314-7.17-2.818-.198-.366-.395-.732-.591-1.099-2.173-4.067-4.449-7.845-7.143-11.59-2.237-3.109-4.252-6.29-5.291-9.89 4.93 2.557 9.865 5.105 14.797 7.658.149.077.312.163.413.29 3.986 4.984 7.988 9.956 11.882 15.01.208.271-.4 1.732-.791 1.809zM.012 51.226a108.803 108.803 0 0 0 24.151-8.124c8.909-4.217 17.934-9.97 23.19-18.552 4.635 7.463 9.256 14.934 14 22.326 3.771 5.876 7.944 11.495 11.66 17.404 2.096 3.334 3.618 7.029 5.43 10.545.255.493.69.894 1.042 1.339v3.038c-5.263 1.268-8.762-1.735-11.719-5.276-4.533-5.428-8.74-11.129-13.077-16.719-3.098-3.992-6.177-7.999-9.289-11.98-.276-.353-.736-.563-1.59-.542.862 2.041 1.653 4.116 2.6 6.117 3.985 8.43 6.257 17.416 8.877 26.312 1.766 5.996 3.97 11.816 3.612 18.205-.11 1.981.52 4.367-1.796 5.363-2.34 1.006-3.914-1.028-5.037-2.494-1.493-1.948-2.578-4.305-3.415-6.638-1.298-3.619-1.935-7.49-3.394-11.032-3.399-8.252-7.096-16.38-10.74-24.53-.466-1.044-1.213-2.04-2.059-2.809-.509-.463-1.46-.441-2.211-.637-.002.775-.227 1.634.03 2.312 1.756 4.633 3.996 9.118 5.359 13.859 2.814 9.796 5.238 19.707 7.676 29.608.452 1.84 1.212 4.107-.948 5.537-1.253.828-5.348-.684-6.447-2.535-1.233-2.078-2.174-4.357-3.033-6.626-2.89-7.633-5.676-15.305-8.522-22.954-1.027-2.76-2.01-5.546-3.197-8.239a45.316 45.316 0 0 0-3.323-6.181c-.4-.621-1.51-.787-2.294-1.161-.165.743-.504 1.494-.47 2.228.462 10.189 1.057 20.372 1.393 30.565.051 1.554-1.035 3.145-1.594 4.72-1.538-1.062-3.899-1.808-4.452-3.247C8.992 86.7 8.23 82.69 7.435 78.748c-.998-4.949-1.762-9.945-2.628-14.92-.03-.166-.122-.346-.086-.496 1.205-5.174-2.368-8.234-4.71-12.106z"
+                    opacity=".525" transform="scale(0.26,0.26), translate(652,571)"></path>
+                </g>
+                <g class="torso">
+                  <path class="layers" data-name="등 상부" fill="#83B7D6" fill-rule="nonzero"
+                    d="M1.003 130.486c-.501 9.516.867 18.757 2.838 27.947 12.996 1.934 26.09 3.146 39.216 3.805 26.995 1.356 53.977.134 80.976-.349 13.017-.233 26.065-.95 39.08-.913 8.87.025 18.03.569 26.843-.86 2.206-10.082 4.026-20.25 6.05-30.372.1-.5.414-.96.89-1.988-3.719-43.927-10.4-88.566-34.522-126.254-.738-.427-1.475-.856-2.208-1.293-1.347.41-2.699.798-4.057 1.166-20.88 5.654-42.832 6.79-64.357 5.728-18.031-.889-35.972-3.381-53.66-7-.413.224-.83.442-1.247.661-5.114 9.242-11.017 18.011-16.542 27.009-5.207 8.48-10.11 17.241-13.36 26.681-3.6 10.458-4.145 21.265-4.755 32.219-.763 13.678-1.158 27.371-1.595 41.063l.097-.1c.166 1.447.35 2.155.313 2.85"
+                    opacity=".525" transform="scale(0.26,0.26), translate(266,193)"></path>
+                  <path class="layers" data-name="등" fill="#83B7D6" fill-rule="nonzero"
+                    d="M153.889 2.502C102.61 3.19 50.952 7.49 0 0c.553 2.53 1.146 5.057 1.757 7.586 1.013 4.19 1.863 8.42 2.64 12.668 8.315 3.14 16.118 7.736 21.728 14.787 6.04 7.591 8.702 17.096 9.28 26.674.638 10.575-1.262 21.001-6.774 30.141-.155.256-.318.505-.476.758l.211-.001a.454.454 0 0 1 .374-.175c41.623.007 83.24.973 124.863 1-4.586-11.03-6.523-22.993-3.955-34.847 4.053-18.705 13.68-37.888 31.549-45.753a313.152 313.152 0 0 1 2.167-10.613c.04-.177.076-.354.115-.53-9.716 1.518-19.825.676-29.59.807"
+                    opacity=".525" transform="scale(0.26,0.26), translate(270,356)"></path>
+                  <path class="layers" data-name="등 하부" fill="#83B7D6" fill-rule="nonzero"
+                    d="M164.647 21.262c-7.087-3.916-11.834-10.463-15.263-17.666a80.093 80.093 0 0 1-1.18-2.6C106.952.977 65.704.032 24.449 0a.457.457 0 0 1-.365.163c-.803 0-1.604.009-2.404.025C16.722 7.7 9.993 13.68 2.38 18.438c-.07.98-.141 1.962-.221 2.943-.37 4.535-1.06 9.108-2.159 13.532 16.012.89 31.832 3.998 47.75 5.868 16.622 1.953 33.526 2.048 50.247 2.022 8.5-.013 17-.228 25.482-.792 7.861-.524 15.635-1.662 23.47-2.403 9.003-.852 18.047-1.532 26.986-2.918-.968-4.025-1.665-8.107-1.966-12.276-2.532-.845-4.992-1.865-7.322-3.152"
+                    opacity=".525" transform="scale(0.26,0.26), translate(277,452)"></path>
+                  <path class="layers" data-name="옆구리" fill="#83B7D6" fill-rule="nonzero"
+                    d="M4.462 90.039c.114-.073.23-.142.344-.215C13.028 84.524 20.36 77.623 25.123 69c5.267-9.536 6.634-20.331 5.528-31.064-.99-9.595-4.39-18.897-11.115-25.964C14.326 6.499 7.726 2.766.732.078c.89 4.94 1.69 9.902 2.517 14.851 2.174 13.002 2.529 26.164 2.924 39.304.118 3.945-.341 7.907-.537 11.861-.396 7.982-.642 15.975-1.174 23.945"
+                    opacity=".525" transform="scale(0.26,0.26), translate(274,378)"></path>
+                  <path class="layers" data-name="옆구리" fill="#83B7D6" fill-rule="nonzero"
+                    d="M27.526 39.007A323.769 323.769 0 0 1 32.188.641c-8.68 3.96-15.652 10.685-20.67 19.03-2.65 4.405-4.76 9.118-6.473 13.96-2.122 6.003-3.999 12.29-4.556 18.65C-.607 64.787 3.06 77.59 9.343 88.366c3.887 6.67 9.292 11.832 16.476 14.772 1.016.415 2.045.794 3.085 1.145-.013-.217-.029-.435-.039-.654-.356-7.994-.178-16.03-.91-23.985-.656-7.15-1.307-14.231-.853-21.43.402-6.386.03-12.82.424-19.207"
+                    opacity=".525" transform="scale(0.26,0.26), translate(421,370)"></path>
+                </g>
+                <g class="pelvis">
+                  <path class="layers" data-name="꼬리뼈" fill="#83B7D6" fill-rule="nonzero"
+                    d="M15.683 14.111c2.149 2.237 3.931 4.753 5.728 7.272 1.071 1.5 2.145 3.003 3.332 4.415.597.71 2.293 3.046 3.223 2.953 1.04-.105 3.348-3.22 4.171-4.018a179.858 179.858 0 0 1 4.08-3.83 216.09 216.09 0 0 1 8.553-7.374c5.102-4.182 10.377-8.146 15.736-11.99-7.934.373-15.88.48-23.824.431C24.43 1.896 12.176 1.702-.03.795c5.332 4.33 10.94 8.349 15.714 13.316"
+                    opacity=".525" transform="scale(0.26,0.26), translate(336,496)"></path>
+                  <path class="layers" data-name="엉덩이" fill="#83B7D6" fill-rule="nonzero"
+                    d="M195.465 53.72c-1.934-6.275-3.81-12.59-5.163-19.021-2.244-10.673-3.932-25.355 5.97-32.651-9.913 1.23-19.851 1.868-29.753 2.914-8.54.9-17.009 1.994-25.593 2.458-12.662 8.63-24.342 17.884-34.627 28.617-.204.214-.507.17-.716 0-5.175-4.207-8.04-10.448-12.617-15.21-5.084-5.29-11.119-9.5-16.754-14.161-4.44-.361-8.87-.813-13.293-1.396C48.537 3.378 34.193.788 19.7.004c-.085.324-.166.648-.256.969-.131.465-.268.928-.4 1.393 4.592 8.067 7.076 17.242 8.32 26.413 2.423 17.871 1.411 37.104-9.288 52.274C13.309 87.81 7.236 93.333.532 98.059c5.498 3.51 11.404 6.35 17.435 8.851 7.084 2.938 14.344 5.423 21.56 8.013 7.048 2.529 13.92 5.375 20.814 8.287 12.216 5.159 24.676 9.454 37.666 11.696-3.372-2.65-6.013-6.198-7.502-10.319-1.992-5.512-1.643-11.945 2.157-16.61 4.459-5.473 12.393-7.226 19.143-6.813 7.18.44 14.875 3.774 15.466 11.904.601 8.261-7.284 14.63-13.025 19.4 9.222-3.581 17.48-1.214 26.68-4.577 9.958-3.64 69.18-24.965 74.168-29.832"
+                    opacity=".525" transform="scale(0.26,0.26), translate(258,490)"></path>
+                  <path class="layers" data-name="항문" fill="#83B7D6" fill-rule="nonzero"
+                    d="M23.57 29.718c5.932-4.925 14.888-12.143 12.272-20.81-2.282-7.56-11.096-9.215-18.02-8.71C11.732.642 5.1 3.08 2.034 8.713c-4.684 8.603.09 18.554 7.514 23.972 1.29-1.873 3.068-3.42 5.231-4.664 2.764-1.59 6.148-1.157 8.345 1.201.151.163.297.332.446.496"
+                    opacity=".525" transform="scale(0.26,0.26), translate(348,592)"></path>
+                  <path class="layers" data-name="측면 엉덩이" fill="#83B7D6" fill-rule="nonzero"
+                    d="M2.72 92.934c13.855-10.232 23.584-24.595 25.224-42.025 1.553-16.519-.087-35.306-8.29-50.192-2.326 7.974-5.001 15.853-7.639 23.734C6.581 40.685 3.062 57.285 1.93 74.39c-.441 6.658-.795 13.328-1.241 19.989.68-.477 1.362-.95 2.03-1.444"
+                    opacity=".525" transform="scale(0.26,0.26), translate(256,492)"></path>
+                  <path class="layers" data-name="측면 엉덩이" fill="#83B7D6" fill-rule="nonzero"
+                    d="M8.246 52.997c2.43 7.444 11.211 32.66 18.68 36.267.615.296-3.484-31.31-4.65-37.754-1.598-8.835-4.54-17.43-6.963-26.112-1.378-4.94-2.694-9.914-4.424-14.734C9.636 7.174 8.506 3.66 7.557.11 2.441 4.105.727 10.533.628 16.927c-.187 12.178 3.876 24.608 7.618 36.07z"
+                    opacity=".525" transform="scale(0.26,0.26), translate(448,492)"></path>
+                </g>
+                <g class="leg-right">
+                  <path class="layers" data-name="햄스트링" fill="#83B7D6" fill-rule="nonzero"
+                    d="M18.42 33.91c15.355-4.724 29.857-11.857 44.984-17.244C75.784 12.257 88.528 7.876 99.61.682c.417 6.04.917 12.07 1.642 18.073 1.793 14.808 4.565 29.499 6.957 44.233 2 12.323 3.922 24.662 6.14 36.948 3.585 19.854 4.157 39.916 4.234 59.993.052 13.656-.398 27.319-.82 40.972-.186 6.007 2.369 11.337 3.528 17.005 2.077 10.151 4.203 20.291 6.189 30.46 1.761 9.017 2.104 18.141 2.407 27.277-2.955-.78-5.956-1.377-8.929-1.857-18.937-3.057-38.721-1.855-57.523 1.573-.702.128-1.404.266-2.105.402-3.024-7.456-6.372-14.82-7.184-23.028-.338-3.412-1.413-6.759-2.218-10.119-1.883-7.862-3.735-15.734-5.733-23.568-1.975-7.74-2.658-15.838-6.406-23.09-1.198-2.32-2.536-4.603-3.423-7.044-3.74-10.286-7.452-20.586-10.948-30.957-4.119-12.22-8.149-24.475-11.944-36.8-2.87-9.324-6.162-18.643-7.72-28.216-1.763-10.852-1.8-21.986-2.591-32.996-.41-5.708-.703-11.428-1.279-17.118-.177-1.757-.655-3.333-1.383-4.747a131.102 131.102 0 0 0 17.92-4.168"
+                    opacity=".525" transform="scale(0.26,0.26), translate(375,595)"></path>
+                  <path class="layers" data-name="오금" fill="#83B7D6" fill-rule="nonzero"
+                    d="M66.959 59.237c-15.133 6.095-32.202 11.274-49.23 12.632-1.354-12.737-3.798-25.278-6.552-37.824C8.935 23.835 4.901 14.326 1.1 4.682.961 4.33.82 3.98.678 3.628 12.152 1.38 23.89.289 35.474.154 44.498.05 53.59.564 62.468 2.25c2.155.41 4.316.889 6.454 1.463.076 2.31.154 4.62.254 6.928.303 6.936 1.64 13.735 5.252 20.085 3.788 6.66 6.868 13.631 9.512 20.78a211.197 211.197 0 0 1-16.981 7.731"
+                    opacity=".525" transform="scale(0.26,0.26), translate(440,870)"></path>
+                  <path class="layers" data-name="종아리" fill="#83B7D6" fill-rule="nonzero"
+                    d="M78.989 101.465c-2.346 7.888-2.543 15.927-2.855 24.02l-.062 1.588c-3.945 2.186-8.062 4.057-12.293 5.644-12.872 4.828-26.667 7.451-40.587 8.294a644.71 644.71 0 0 0-1.362-6.48c-1.844-8.557-3.977-17.074-6.487-25.458-1.708-5.702-4.727-11.015-6.396-16.726C3.553 73.9 2.26 54.812 1.797 35.774c-.123-5.076-.471-10.108-.985-15.11 10.444-.838 20.81-3.033 30.811-5.969C43.913 11.088 55.87 6.278 67.288.463 69.23 5.804 70.94 11.24 72.52 16.717c3.435 11.913 6.673 23.868 8.448 36.186 1.531 10.634 2.82 21.289 1.546 32-.665 5.585-1.919 11.163-3.524 16.562"
+                    opacity=".525" transform="scale(0.26,0.26), translate(455,925)"></path>
+                  <path class="layers" data-name="발목" fill="#83B7D6" fill-rule="nonzero"
+                    d="M48.442 75.235c-1.598 9.563.24 18.813 1.783 28.11.13.785.28 1.562.44 2.337a104.08 104.08 0 0 0-26.204 2.095c-5.781 1.21-11.451 2.84-17.052 4.695-.02-2.775.106-5.56.44-8.36.598-5.007 1.118-10.08.992-15.105-.18-7.144-.897-14.28-1.545-21.406-.993-10.915-1.814-21.859-3.287-32.713-.954-7.026-2.221-14.02-3.634-20.98C18.611 12.874 37.158 9.01 53.025.275c-.707 18.283-1.455 36.566-2.403 54.837-.35 6.73-1.07 13.477-2.18 20.123"
+                    opacity=".525" transform="scale(0.26,0.26), translate(480,1055)"></path>
+                  <path class="layers" data-name="발" fill="#83B7D6" fill-rule="nonzero"
+                    d="M3.79 106.26C1.72 102.785-.144 99.213.412 94.954c.664-5.09 1.738-10.126 2.4-15.215.359-2.766.577-5.633.262-8.386-.902-7.9-.683-15.721.44-23.585.748-5.231 1.505-10.55 1.314-15.797-.162-4.434-1.86-8.791-2.563-13.232-1.053-6.662-.759-4.756-.897-11.484 4.955-1.641 9.964-3.103 15.064-4.238A99.985 99.985 0 0 1 42.998.727c1.728 7.756 3.549 6.516 6.395 13.902 2.176 5.649 2.757 11.114 1.209 16.966-.432 1.63-.22 3.778.506 5.306 3.846 8.094 5.685 16.521 5.54 25.486-.048 2.984.662 6.028 1.366 8.964.937 3.908 2.18 7.745 3.353 11.595.275.904.704 1.79 1.214 2.588 2.404 3.755 2.802 7.762 1.931 12.066-.154.764-.218 1.546-.259 2.333-18.824 7.506-40.132 9.45-60.463 6.327z"
+                    opacity=".525" transform="scale(0.26,0.27), translate(488,1120)"></path>
+                  <path class="layers" data-name="발가락" fill="#83B7D6" fill-rule="nonzero"
+                    d="M0 6.086C20.082 8.934 41.144 7.2 60 0c-.045 1.012-.102 2.023-.325 2.997-.531 2.316-1.292 4.65-2.394 6.758-1.098 2.101-3.15 2.54-5.436 1.581-.427-.178-.909-.231-1.327-.333-3.003 4.826-4.208 5.276-7.734 3.392-1.52 1.436-2.711 3.398-4.368 3.892-1.674.498-3.808-.46-6.053-.833L29.977 21h-5.35l-3.986-5.072-7.2 5.072h-1.46c-1.052-.661-2.082-1.361-3.162-1.978C4.53 16.57.437 14.024 1.054 8.218c.06-.579-.51-1.254-.87-1.835L0 6.086"
+                    opacity=".525" transform="scale(0.26,0.27), translate(492,1223)"></path>
+                </g>
+                <g class="leg-left">
+                  <path class="layers" data-name="햄스트링" fill="#83B7D6" fill-rule="nonzero"
+                    d="M111.788 33.91c-15.355-4.724-29.857-11.857-44.985-17.244C54.423 12.257 41.68 7.876 30.598.682c-.416 6.04-.916 12.07-1.642 18.073C27.164 33.563 24.392 48.254 22 62.988c-2 12.323-3.921 24.662-6.14 36.948-3.584 19.854-4.156 39.916-4.233 59.993-.053 13.656.397 27.319.82 40.972.185 6.007-2.37 11.337-3.528 17.005-2.077 10.151-4.203 20.291-6.189 30.46C.967 257.382.624 266.506.321 275.642c2.955-.78 5.956-1.377 8.93-1.857 18.937-3.057 38.72-1.855 57.523 1.573.702.128 1.403.266 2.105.402 3.024-7.456 6.372-14.82 7.183-23.028.338-3.412 1.413-6.759 2.218-10.119 1.884-7.862 3.735-15.734 5.733-23.568 1.975-7.74 2.659-15.838 6.406-23.09 1.199-2.32 2.537-4.603 3.423-7.044 3.74-10.286 7.452-20.586 10.948-30.957 4.12-12.22 8.15-24.475 11.944-36.8 2.871-9.324 6.163-18.643 7.72-28.216 1.764-10.852 1.8-21.986 2.592-32.996.41-5.708.702-11.428 1.278-17.118.178-1.757.655-3.333 1.384-4.747a131.102 131.102 0 0 1-17.92-4.168"
+                    opacity=".525" transform="scale(0.26,0.26), translate(222,595)"></path>
+                  <path class="layers" data-name="오금" fill="#83B7D6" fill-rule="nonzero"
+                    d="M17.249 59.237c15.133 6.095 32.201 11.274 49.23 12.632 1.354-12.737 3.797-25.278 6.551-37.824 2.243-10.21 6.276-19.719 10.078-29.363.139-.352.28-.703.421-1.054C72.056 1.38 60.318.289 48.733.154 39.71.05 30.617.564 21.74 2.25c-2.155.41-4.317.889-6.455 1.463-.076 2.31-.154 4.62-.254 6.928-.302 6.936-1.639 13.735-5.251 20.085-3.788 6.66-6.868 13.631-9.513 20.78a211.197 211.197 0 0 0 16.982 7.731"
+                    opacity=".525" transform="scale(0.26,0.26), translate(208,870)"></path>
+                  <path class="layers" data-name="종아리" fill="#83B7D6" fill-rule="nonzero"
+                    d="M4.219 101.465c2.346 7.888 2.543 15.927 2.854 24.02.02.53.042 1.059.063 1.588 3.944 2.186 8.062 4.057 12.293 5.644 12.872 4.828 26.666 7.451 40.586 8.294.443-2.163.898-4.323 1.362-6.48 1.844-8.557 3.978-17.074 6.488-25.458 1.708-5.702 4.727-11.015 6.396-16.726 5.393-18.447 6.686-37.535 7.149-56.573.124-5.076.472-10.108.986-15.11-10.444-.838-20.81-3.033-30.812-5.969C39.294 11.088 27.338 6.278 15.92.463c-1.942 5.341-3.65 10.777-5.23 16.254C7.252 28.63 4.014 40.585 2.24 52.903.709 63.537-.58 74.192.695 84.903c.665 5.585 1.918 11.163 3.524 16.562"
+                    opacity=".525" transform="scale(0.26,0.26), translate(190,925)"></path>
+                  <path class="layers" data-name="발목" fill="#83B7D6" fill-rule="nonzero"
+                    d="M4.766 75.235c1.597 9.563-.24 18.813-1.783 28.11a61.69 61.69 0 0 1-.44 2.337 104.08 104.08 0 0 1 26.203 2.095c5.782 1.21 11.452 2.84 17.053 4.695.019-2.775-.107-5.56-.44-8.36-.599-5.007-1.118-10.08-.992-15.105.179-7.144.896-14.28 1.544-21.406.993-10.915 1.815-21.859 3.287-32.713.954-7.026 2.222-14.02 3.634-20.98C34.596 12.874 16.05 9.01.182.275.89 18.558 1.639 36.84 2.587 55.112c.35 6.73 1.07 13.477 2.18 20.123"
+                    opacity=".525" transform="scale(0.26,0.26), translate(198,1055)"></path>
+                  <path class="layers" data-name="발" fill="#83B7D6" fill-rule="nonzero"
+                    d="M62.2 106.542c2.105-3.546 4.001-7.19 3.436-11.537-.675-5.193-1.768-10.33-2.44-15.524-.366-2.822-.588-5.747-.268-8.557.918-8.06.695-16.04-.448-24.064-.76-5.337-1.53-10.765-1.336-16.118.165-4.524 1.893-8.97 2.607-13.5 1.072-6.798 1.745-3.125 1.885-9.99-5.04-1.675-10.136-3.167-15.324-4.325A101.414 101.414 0 0 0 23.288.59C21.53 8.505 13.005 24.387 14.58 30.36c.439 1.663.224 3.855-.515 5.414-3.912 8.258-5.783 16.857-5.635 26.004.049 3.045-.674 6.15-1.39 9.146-.954 3.988-2.219 7.903-3.411 11.83-.28.923-.716 1.827-1.236 2.64C-.052 89.227-.457 93.315.43 97.706c.157.78.222 1.578.264 2.38 19.149 7.66 40.825 9.643 61.506 6.457z"
+                    opacity=".525" transform="scale(0.26,0.27), translate(175,1120)"></path>
+                  <path class="layers" data-name="발가락" fill="#83B7D6" fill-rule="nonzero"
+                    d="M61 6.376C40.583 9.36 19.17 7.543 0 0c.045 1.06.104 2.119.33 3.14.54 2.426 1.314 4.87 2.434 7.08 1.117 2.201 3.203 2.66 5.527 1.656.434-.187.924-.242 1.35-.349 3.052 5.056 4.277 5.527 7.862 3.554 1.545 1.504 2.756 3.56 4.441 4.077 1.701.521 3.871-.483 6.154-.873L30.523 22h5.44l4.052-5.313L47.335 22h1.484c1.07-.693 2.117-1.426 3.215-2.072 4.362-2.569 8.522-5.236 7.895-11.32-.062-.605.518-1.312.884-1.92L61 6.375"
+                    opacity=".525" transform="scale(0.26,0.27), translate(178,1223)"></path>
+                </g>
+              </g>
+            </g>
+          </svg>
         </div>
-
-        <div class="right-panel">
-            <section id="step1_gender">
-                <h1>나의 아픈 곳은? <span class="subtitle">AI 건강 가이드</span></h1>
-                <p class="disclaimer">
-                    ⚠️ <strong>중요 안내:</strong> 본 프로그램은 의료적 진단이 아니며, 참고용으로만 사용해야 합니다.
-                </p>
-                <h2>1단계: 성별을 선택하세요</h2>
-                <div class="options">
-                    <button class="btn gender-btn" data-gender="male">남성</button>
-                    <button class="btn gender-btn" data-gender="female">여성</button>
-                </div>
-            </section>
-
-            <section id="step2_combined" class="hidden">
-                <h2>2단계: 아픈 부위와 증상을 선택하세요</h2>
-                <div id="selected-parts-display"><strong>선택한 부위:</strong> 없음</div>
-                <div id="symptom-options" class="options">
-                    <p style="color: #6c757d;">아픈 부위를 선택하면 관련 증상이 나타납니다.</p>
-                </div>
-                <textarea id="symptom-details" placeholder="선택지에 없는 증상이나 더 자세한 내용을 입력하세요."></textarea>
-                <div class="button-group">
-                    <button id="back-to-step1-btn" class="btn btn-back">뒤로가기</button>
-                    <button id="to-step4-btn" class="btn btn-next">다음 단계로</button>
-                </div>
-            </section>
-
-            <section id="step4_conditions" class="hidden">
-                <h2>4단계: 증상이 나타나기 전 상황을 알려주세요 ✍️</h2>
-                <div class="options">
-                    <button class="btn condition-btn" data-condition="수면 부족">수면 부족</button>
-                    <button class="btn condition-btn" data-condition="스트레스">스트레스</button>
-                    <button class="btn condition-btn" data-condition="과식">과식</button>
-                    <button class="btn condition-btn" data-condition="과음">과음</button>
-                    <button class="btn condition-btn" data-condition="운동 후">운동/활동 후</button>
-                    <button class="btn condition-btn" data-condition="자고 일어난 후">자고 일어난 후</button>
-                </div>
-                <textarea id="condition-details" placeholder="선택지에 없는 상황이나 더 자세한 내용을 입력하세요."></textarea>
-                <div class="button-group">
-                    <button id="back-to-step2-btn" class="btn btn-back">뒤로가기</button>
-                    <button id="get-result-btn" class="btn btn-next">AI 분석 결과 보기</button>
-                </div>
-            </section>
-
-            <section id="result" class="hidden">
-                <h2>AI 분석 및 맞춤형 조언</h2>
-                <div id="result-content" class="result-box"></div>
-                <button id="restart-btn" class="btn btn-next">처음부터 다시 시작</button>
-            </section>
-        </div>
+      </div>
+      <div class="map-controls">
+        <button id="flip-btn" class="btn">앞/뒤 뒤집기</button>
+      </div>
     </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const leftPanel = document.getElementById('left-panel');
-            const steps = {
-                gender: document.getElementById('step1_gender'),
-                combined: document.getElementById('step2_combined'),
-                conditions: document.getElementById('step4_conditions'),
-                result: document.getElementById('result')
-            };
-            const bodySvg = document.getElementById('body-svg');
-            const symptomOptionsContainer = document.getElementById('symptom-options');
-            const resultContent = document.getElementById('result-content');
-            const flipBtn = document.getElementById('flip-btn');
-            const selectedPartsDisplay = document.getElementById('selected-parts-display');
-            const backToStep1Btn = document.getElementById('back-to-step1-btn');
-            const backToStep2Btn = document.getElementById('back-to-step2-btn');
+    <div class="right-panel">
+      <section id="step1_gender">
+        <h1>나의 아픈 곳은? <span class="subtitle">AI 건강 가이드</span></h1>
+        <p class="disclaimer">
+          ⚠️ <strong>중요 안내:</strong> 본 프로그램은 의료적 진단이 아니며, 참고용으로만 사용해야 합니다.
+        </p>
+        <h2>1단계: 성별을 선택하세요</h2>
+        <div class="options">
+          <button class="btn gender-btn" data-gender="male">남성</button>
+          <button class="btn gender-btn" data-gender="female">여성</button>
+        </div>
+      </section>
 
-            let userSelections = { gender: null, parts: [], symptoms: [], conditions: [] };
+      <section id="step2_combined" class="hidden">
+        <h2>2단계: 아픈 부위와 증상을 선택하세요</h2>
+        <div id="selected-parts-display"><strong>선택한 부위:</strong> 없음</div>
+        <div id="symptom-options" class="options">
+          <p style="color: #6c757d;">아픈 부위를 선택하면 관련 증상이 나타납니다.</p>
+        </div>
+        <textarea id="symptom-details" placeholder="선택지에 없는 증상이나 더 자세한 내용을 입력하세요."></textarea>
+        <div class="button-group">
+          <button id="back-to-step1-btn" class="btn btn-back">뒤로가기</button>
+          <button id="to-step4-btn" class="btn btn-next">다음 단계로</button>
+        </div>
+      </section>
 
-            const symptomsData = {
-                '두피': ['머리가 빠지는 느낌', '머리가 가려움', '비듬이 생김', '두피가 붉어짐'],
-                '머리': ['머리가 아픔', '어지러움', '머리를 부딪힘'],
-                '이마': ['이마 쪽이 아픔', '뾰루지가 남', '감각이 둔하거나 이상함'],
-                '눈': ['시력이 떨어진 느낌', '눈알이 아픔', '눈이 빨갛게 충혈됨', '눈에 무언가 들어간 느낌', '눈이 뻑뻑하고 건조함'],
-                '코': ['코가 막힘', '콧물이 남', '냄새를 잘 못 맡음', '재채기가 계속 남'],
-                '광대/뺨': ['얼굴(광대/뺨)이 아픔', '얼굴이 부음', '뺨이 빨개짐', '얼굴 근육이 잘 안 움직임'],
-                '입': ['입안이 혬', '입술에 물집이 생김', '맛을 잘 못 느낌', '입안이 마름'],
-                '턱': ['턱 관절이 아픔', '입이 잘 안 벌어짐', '턱에서 딱딱 소리가 남'],
-                '귀': ['귀가 아픔', '소리가 잘 안 들림', '귀에서 소리가 남 (삐-, 윙-)', '세상이 빙빙 도는 느낌'],
-                '목': ['침 삼킬 때 목이 아픔', '음식 삼키기 힘듦', '목이 뻣뻣함', '목소리가 쉼'],
-                '뒷목': ['뒷목이 뻐근하고 아픔', '목덜미가 뻣뻣함', '통증이 팔까지 내려오는 느낌'],
+      <section id="step4_conditions" class="hidden">
+        <h2>3단계: 증상이 나타나기 전 상황을 알려주세요 ✍️</h2>
+        <div class="options">
+          <button class="btn condition-btn" data-condition="수면 부족">수면 부족</button>
+          <button class="btn condition-btn" data-condition="스트레스">스트레스</button>
+          <button class="btn condition-btn" data-condition="과식">과식</button>
+          <button class="btn condition-btn" data-condition="과음">과음</button>
+          <button class="btn condition-btn" data-condition="운동 후">운동/활동 후</button>
+          <button class="btn condition-btn" data-condition="자고 일어난 후">자고 일어난 후</button>
+        </div>
+        <textarea id="condition-details" placeholder="선택지에 없는 상황이나 더 자세한 내용을 입력하세요."></textarea>
+        <p id="condition-error-message" class="error-message hidden"></p>
+        <div class="button-group">
+          <button id="back-to-step2-btn" class="btn btn-back">뒤로가기</button>
+          <button id="get-result-btn" class="btn btn-next">AI 분석 결과 보기</button>
+        </div>
+      </section>
 
-                // -- 가슴 & 배 --
-                '상흉부': ['가슴이 아픔', '숨쉬기 힘듦', '가슴이 답답하고 꽉 막힌 느낌'],
-                '흉골': ['가슴 중앙뼈가 아픔', '눌렀을 때 아픔'],
-                '가슴': ['가슴이 아픔', '가슴에 멍울이 만져짐', '갈비뼈 쪽이 아픔'],
-                '하흉부': ['옆구리 갈비뼈 쪽이 아픔', '숨 쉴 때 통증이 심해짐'],
-                '명치': ['명치 끝이 아픔', '속이 타는 듯한 느낌', '소화가 안 됨'],
-                '상복부': ['윗배가 아픔', '속이 울렁거림', '토할 것 같음'],
-                '하복부': ['아랫배가 아픔', '쥐어짜는 듯한 통증', '화장실 가는 횟수가 변함'],
-                '옆구리': ['옆구리가 결리고 아픔', '칼로 찌르는 듯한 통증'],
-                '등 상부': ['등 위쪽(날개뼈 근처)이 아픔', '날개뼈가 아픔'],
-                '등': ['등 전체가 아픔', '등이 뻣뻣하게 굳음'],
-                '등 하부': ['허리가 아픔', '통증이 다리까지 내려오는 느낌'],
+      <section id="result" class="hidden">
+        <h2>AI 분석 및 맞춤형 조언</h2>
+        <div id="result-content" class="result-box"></div>
+        <button id="restart-btn" class="btn btn-next">처음부터 다시 시작</button>
+      </section>
+    </div>
+  </div>
 
-                // -- 골반 & 엉덩이 --
-                '골반': ['골반이 아픔', '묵직한 느낌'],
-                '치골상부': ['아랫배 제일 아래쪽(치골)이 아픔', '소변 볼 때 아픔', '소변을 너무 자주 봄'],
-                '사타구니': ['사타구니가 아픔', '사타구니에 멍울이 만져짐'],
-                '엉덩이': ['엉덩이가 아픔', '엉덩이부터 다리까지 저리고 아픔'],
-                '측면 엉덩이': ['엉덩이 옆쪽이 아픔', '눌렀을 때 아픔'],
-                '꼬리뼈': ['꼬리뼈가 아픔'],
-                '항문': ['항문이 아픔', '항문이 가려움', '피가 남'],
-                '생식기': ['아프거나 불편함', '가려움', '이상한 분비물이 나옴', '소변보기가 불편함'],
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const leftPanel = document.getElementById('left-panel');
+      const steps = {
+        gender: document.getElementById('step1_gender'),
+        combined: document.getElementById('step2_combined'),
+        conditions: document.getElementById('step4_conditions'),
+        result: document.getElementById('result')
+      };
+      const bodySvg = document.getElementById('body-svg');
+      const symptomOptionsContainer = document.getElementById('symptom-options');
+      const resultContent = document.getElementById('result-content');
+      const flipBtn = document.getElementById('flip-btn');
+      const selectedPartsDisplay = document.getElementById('selected-parts-display');
+      const backToStep1Btn = document.getElementById('back-to-step1-btn');
+      const backToStep2Btn = document.getElementById('back-to-step2-btn');
+      const conditionTextarea = document.getElementById('condition-details');
+      const conditionErrorMessage = document.getElementById('condition-error-message');
 
-                // -- 팔 & 손 --
-                '어깨': ['어깨가 아픔', '팔을 움직이기 힘듦', '어깨에서 소리가 남'],
-                '겨드랑이': ['겨드랑이가 아픔', '겨드랑이에 멍울이 만져짐', '땀이 많이 남'],
-                '상완': ['어깨 아래 팔뚝이 아픔', '팔에 힘이 빠짐', '팔이 부음'],
-                '팔꿈치': ['팔꿈치가 아픔', '눌렀을 때 아픔', '팔을 굽히고 펴기 힘듦'],
-                '전완': ['팔꿈치 아래 팔이 아픔', '감각이 이상함', '저림'],
-                '손목': ['손목이 아픔', '손목에서 소리가 남', '손목이 부음'],
-                '손': ['손이 아픔', '손이 부음', '손을 움직이기 힘듦'],
-                '손등': ['손등이 아픔', '발진이 생김', '힘줄이 부은 느낌'],
-                '손가락': ['손가락 마디가 아픔', '손가락이 저림', '손 끝이 차갑고 색이 변함'],
+      let userSelections = { gender: null, parts: [], symptoms: [], conditions: [] };
 
-                // -- 다리 & 발 --
-                '허벅지': ['허벅지가 아픔', '근육에 쥐가 남', '다리에 힘이 빠짐'],
-                '햄스트링': ['허벅지 뒤쪽이 아픔', '근육이 당기는 느낌'],
-                '무릎': ['무릎이 아픔', '무릎에 물이 참', '무릎이 걸리는 느낌', '무릎이 불안정함'],
-                '오금': ['무릎 뒤쪽이 아픔', '무릎 뒤에 혹이 만져짐'],
-                '정강이': ['정강이뼈가 아픔', '눌렀을 때 아픔', '피로가 쌓인 듯한 통증'],
-                '종아리': ['종아리가 아픔', '다리에 쥐가 남', '다리가 부음'],
-                '발목': ['발목이 아픔', '발목이 부음', '발목을 삐끗함', '발목이 불안정함'],
-                '발': ['발이 아픔', '발바닥이 아픔'],
-                '발가락': ['발가락이 아픔', '감각이 이상함', '발톱에 문제가 생김']
-            };
-            let isFront = true;
+      const symptomsData = {
+        '두피': ['머리가 빠지는 느낌', '머리가 가려움', '비듬이 생김', '두피가 붉어짐'],
+        '머리': ['머리가 아픔', '어지러움', '머리를 부딪힘'],
+        '이마': ['이마 쪽이 아픔', '뾰루지가 남', '감각이 둔하거나 이상함'],
+        '눈': ['시력이 떨어진 느낌', '눈알이 아픔', '눈이 빨갛게 충혈됨', '눈에 무언가 들어간 느낌', '눈이 뻑뻑하고 건조함'],
+        '코': ['코가 막힘', '콧물이 남', '냄새를 잘 못 맡음', '재채기가 계속 남'],
+        '광대/뺨': ['얼굴(광대/뺨)이 아픔', '얼굴이 부음', '뺨이 빨개짐', '얼굴 근육이 잘 안 움직임'],
+        '입': ['입안이 혬', '입술에 물집이 생김', '맛을 잘 못 느낌', '입안이 마름'],
+        '턱': ['턱 관절이 아픔', '입이 잘 안 벌어짐', '턱에서 딱딱 소리가 남'],
+        '귀': ['귀가 아픔', '소리가 잘 안 들림', '귀에서 소리가 남 (삐-, 윙-)', '세상이 빙빙 도는 느낌'],
+        '목': ['침 삼킬 때 목이 아픔', '음식 삼키기 힘듦', '목이 뻣뻣함', '목소리가 쉼'],
+        '뒷목': ['뒷목이 뻐근하고 아픔', '목덜미가 뻣뻣함', '통증이 팔까지 내려오는 느낌'],
 
-            document.querySelectorAll('.gender-btn').forEach(button => {
-                button.addEventListener('click', () => {
-                    userSelections.gender = button.dataset.gender;
-                    showStep(steps.combined);
-                });
-            });
+        // -- 가슴 & 배 --
+        '상흉부': ['가슴이 아픔', '숨쉬기 힘듦', '가슴이 답답하고 꽉 막힌 느낌'],
+        '흉골': ['가슴 중앙뼈가 아픔', '눌렀을 때 아픔'],
+        '가슴': ['가슴이 아픔', '가슴에 멍울이 만져짐', '갈비뼈 쪽이 아픔'],
+        '하흉부': ['옆구리 갈비뼈 쪽이 아픔', '숨 쉴 때 통증이 심해짐'],
+        '명치': ['명치 끝이 아픔', '속이 타는 듯한 느낌', '소화가 안 됨'],
+        '상복부': ['윗배가 아픔', '속이 울렁거림', '토할 것 같음'],
+        '하복부': ['아랫배가 아픔', '쥐어짜는 듯한 통증', '화장실 가는 횟수가 변함'],
+        '옆구리': ['옆구리가 결리고 아픔', '칼로 찌르는 듯한 통증'],
+        '등 상부': ['등 위쪽(날개뼈 근처)이 아픔', '날개뼈가 아픔'],
+        '등': ['등 전체가 아픔', '등이 뻣뻣하게 굳음'],
+        '등 하부': ['허리가 아픔', '통증이 다리까지 내려오는 느낌'],
 
-            setupSvgEventListeners();
+        // -- 골반 & 엉덩이 --
+        '골반': ['골반이 아픔', '묵직한 느낌'],
+        '치골상부': ['아랫배 제일 아래쪽(치골)이 아픔', '소변 볼 때 아픔', '소변을 너무 자주 봄'],
+        '사타구니': ['사타구니가 아픔', '사타구니에 멍울이 만져짐'],
+        '엉덩이': ['엉덩이가 아픔', '엉덩이부터 다리까지 저리고 아픔'],
+        '측면 엉덩이': ['엉덩이 옆쪽이 아픔', '눌렀을 때 아픔'],
+        '꼬리뼈': ['꼬리뼈가 아픔'],
+        '항문': ['항문이 아픔', '항문이 가려움', '피가 남'],
+        '생식기': ['아프거나 불편함', '가려움', '이상한 분비물이 나옴', '소변보기가 불편함'],
 
-            document.getElementById('to-step4-btn').addEventListener('click', handleSymptomSubmission);
-            document.getElementById('get-result-btn').addEventListener('click', handleConditionSubmission);
-            document.getElementById('restart-btn').addEventListener('click', restart);
-            flipBtn.addEventListener('click', flipBodyMap);
+        // -- 팔 & 손 --
+        '어깨': ['어깨가 아픔', '팔을 움직이기 힘듦', '어깨에서 소리가 남'],
+        '겨드랑이': ['겨드랑이가 아픔', '겨드랑이에 멍울이 만져짐', '땀이 많이 남'],
+        '상완': ['어깨 아래 팔뚝이 아픔', '팔에 힘이 빠짐', '팔이 부음'],
+        '팔꿈치': ['팔꿈치가 아픔', '눌렀을 때 아픔', '팔을 굽히고 펴기 힘듦'],
+        '전완': ['팔꿈치 아래 팔이 아픔', '감각이 이상함', '저림'],
+        '손목': ['손목이 아픔', '손목에서 소리가 남', '손목이 부음'],
+        '손': ['손이 아픔', '손이 부음', '손을 움직이기 힘듦'],
+        '손등': ['손등이 아픔', '발진이 생김', '힘줄이 부은 느낌'],
+        '손가락': ['손가락 마디가 아픔', '손가락이 저림', '손 끝이 차갑고 색이 변함'],
 
-            document.querySelectorAll('.condition-btn').forEach(button => {
-                button.addEventListener('click', () => button.classList.toggle('selected'));
-            });
+        // -- 다리 & 발 --
+        '허벅지': ['허벅지가 아픔', '근육에 쥐가 남', '다리에 힘이 빠짐'],
+        '햄스트링': ['허벅지 뒤쪽이 아픔', '근육이 당기는 느낌'],
+        '무릎': ['무릎이 아픔', '무릎에 물이 참', '무릎이 걸리는 느낌', '무릎이 불안정함'],
+        '오금': ['무릎 뒤쪽이 아픔', '무릎 뒤에 혹이 만져짐'],
+        '정강이': ['정강이뼈가 아픔', '눌렀을 때 아픔', '피로가 쌓인 듯한 통증'],
+        '종아리': ['종아리가 아픔', '다리에 쥐가 남', '다리가 부음'],
+        '발목': ['발목이 아픔', '발목이 부음', '발목을 삐끗함', '발목이 불안정함'],
+        '발': ['발이 아픔', '발바닥이 아픔'],
+        '발가락': ['발가락이 아픔', '감각이 이상함', '발톱에 문제가 생김']
+      };
+      let isFront = true;
 
-            function showStep(stepToShow) {
-                Object.values(steps).forEach(step => step.classList.add('hidden'));
-                stepToShow.classList.remove('hidden');
-
-                if (stepToShow === steps.combined) {
-                    leftPanel.classList.remove('hidden');
-                    leftPanel.classList.remove('disabled');
-                } else if (stepToShow === steps.conditions) {
-                    leftPanel.classList.remove('hidden');
-                    leftPanel.classList.add('disabled');
-                } else {
-                    leftPanel.classList.add('hidden');
-                }
-            }
-
-            function setupSvgEventListeners() {
-                const allPaths = bodySvg.querySelectorAll('.layers[data-name]');
-                const tooltip = document.getElementById('body-part-tooltip');
-
-                allPaths.forEach((path, index) => {
-                    const uniqueId = `part-${index}`;
-                    path.dataset.uniqueId = uniqueId;
-
-                    path.addEventListener('mouseover', (e) => {
-                        tooltip.textContent = e.currentTarget.dataset.name;
-                        tooltip.style.display = 'block';
-                    });
-                    path.addEventListener('mouseout', () => {
-                        tooltip.style.display = 'none';
-                    });
-                    path.addEventListener('mousemove', (e) => {
-                        tooltip.style.left = `${e.pageX + 10}px`;
-                        tooltip.style.top = `${e.pageY}px`;
-                    });
-
-                    path.addEventListener('click', (e) => {
-                        const partElement = e.currentTarget;
-                        const partName = partElement.dataset.name;
-                        const partId = partElement.dataset.uniqueId;
-                        const groupElement = partElement.closest('.head, .torso, .neck, .arm-right, .arm-left, .leg-right, .leg-left');
-                        const groupName = partElement.dataset.name;
-
-                        partElement.classList.toggle('selected-part');
-
-                        const partIndex = userSelections.parts.findIndex(p => p.id === partId);
-
-                        if (partIndex > -1) {
-                            userSelections.parts.splice(partIndex, 1);
-                        } else {
-                            userSelections.parts.push({ id: partId, name: partName, group: groupName });
-                        }
-
-                        updateSelectedPartsDisplay();
-                        populateSymptoms();
-                    });
-                });
-            }
-
-            function updateSelectedPartsDisplay() {
-                selectedPartsDisplay.innerHTML = '<strong>선택한 부위:</strong> ';
-                if (userSelections.parts.length === 0) {
-                    selectedPartsDisplay.innerHTML += '없음';
-                } else {
-                    const uniquePartNames = [...new Set(userSelections.parts.map(p => p.name))];
-                    uniquePartNames.forEach(name => {
-                        const tag = document.createElement('span');
-                        tag.className = 'part-tag';
-                        tag.textContent = name;
-                        selectedPartsDisplay.appendChild(tag);
-                    });
-                }
-            }
-
-            function populateSymptoms() {
-                // 1. 함수가 시작될 때, 현재 선택된 증상들을 '이름'으로 기억해 둡니다.
-                const previouslySelectedSymptoms = new Set(
-                    Array.from(symptomOptionsContainer.querySelectorAll('.symptom-btn.selected'))
-                        .map(btn => btn.dataset.symptom)
-                );
-
-                symptomOptionsContainer.innerHTML = ''; // 기존처럼 일단 화면을 비웁니다.
-                const relevantSymptoms = new Set();
-
-                // 현재 선택된 모든 부위 그룹에서 증상들을 가져와 중복 없이 합칩니다.
-                const selectedGroups = [...new Set(userSelections.parts.map(p => p.group).filter(g => g))];
-
-                if (selectedGroups.length === 0) {
-                    symptomOptionsContainer.innerHTML = '<p style="color: #6c757d;">아픈 부위를 선택하면 관련 증상이 나타납니다.</p>';
-                    return;
-                }
-
-                selectedGroups.forEach(groupName => {
-                    const symptoms = symptomsData[groupName] || [];
-                    symptoms.forEach(symptom => relevantSymptoms.add(symptom));
-                });
-
-                // 2. 증상 버튼들을 새로 만듭니다.
-                relevantSymptoms.forEach(symptom => {
-                    const button = document.createElement('button');
-                    button.className = 'btn symptom-btn';
-                    button.dataset.symptom = symptom;
-                    button.textContent = symptom;
-
-                    // 3. 만약 이 버튼의 이름이 아까 기억해 둔 목록에 있다면, 'selected' 클래스를 다시 추가해줍니다.
-                    if (previouslySelectedSymptoms.has(symptom)) {
-                        button.classList.add('selected');
-                    }
-
-                    button.addEventListener('click', () => button.classList.toggle('selected'));
-                    symptomOptionsContainer.appendChild(button);
-                });
-            }
-
-            function handleSymptomSubmission() {
-                userSelections.symptoms = Array.from(document.querySelectorAll('.symptom-btn.selected')).map(btn => btn.dataset.symptom);
-                const details = document.getElementById('symptom-details').value;
-                if (details) userSelections.symptoms.push(`(상세: ${details})`);
-                if (userSelections.parts.length > 0 && userSelections.symptoms.length === 0) {
-                    alert('증상을 하나 이상 선택해주세요.');
-                    return;
-                }
-                showStep(steps.conditions);
-            }
-
-            function handleConditionSubmission() {
-                // 버튼으로 선택한 값들을 가져옵니다.
-                userSelections.conditions = Array.from(document.querySelectorAll('.condition-btn.selected')).map(btn => btn.dataset.condition);
-
-                // === ✨ 이 부분을 추가하세요 === //
-                // 새로 추가한 textarea의 값을 가져옵니다.
-                const details = document.getElementById('condition-details').value;
-                // 내용이 있을 경우에만 userSelections.conditions 배열에 추가합니다.
-                if (details) {
-                    userSelections.conditions.push(`(상세: ${details})`);
-                }
-                showStep(steps.result);
-                analyzeAndShowResult();
-            }
-
-            function analyzeAndShowResult() {
-                const { parts, symptoms, gender, conditions } = userSelections;
-                const genderText = gender === 'male' ? '남성' : '여성';
-
-                const displayParts = [...new Set(parts.map(p => p.name))];
-
-                let html = `
-                    <h3>AI 분석 요약 (예시)</h3>
-                    <p><strong>- 성별:</strong> ${genderText}</p>
-                    <p><strong>- 아픈 부위:</strong> ${displayParts.join(', ')}</p>
-                    <p><strong>- 주요 증상:</strong> ${symptoms.join(', ')}</p>
-                    <p><strong>- 관련 상황:</strong> ${conditions.length > 0 ? conditions.join(', ') : '선택 안 함'}</p>
-                    <hr>
-                    <h4>[참고] 예상 질환 및 대처 방안</h4>
-                    <p>선택하신 내용을 바탕으로 볼 때, <strong>복합적인 증상</strong>을 고려해볼 수 있습니다. 충분한 휴식과 수분 섭취를 권장하며, 증상이 지속될 경우 전문가의 진료를 받는 것이 좋습니다.</p>
-                    <p style="color: #6c757d; font-size: 0.9em;"><strong>※ 이 결과는 일반적인 정보에 기반한 예시이며, 실제 의료적 진단으로 사용될 수 없습니다.</strong></p>
-                `;
-                resultContent.innerHTML = html;
-            }
-
-            function restart() {
-                userSelections = { gender: null, parts: [], symptoms: [], conditions: [] };
-                document.querySelectorAll('.btn.selected, .layers.selected-part').forEach(el => el.classList.remove('selected', 'selected-part'));
-                document.getElementById('symptom-details').value = '';
-
-                showStep(steps.gender);
-                isFront = true;
-                // 'front-view'와 'back-view'를 찾아서 초기화해야 합니다.
-                // SVG를 생략했으므로, 이 부분은 실제 SVG 코드에 맞게 동작해야 합니다.
-                const frontView = document.getElementById('front-view');
-                const backView = document.getElementById('back-view');
-                if (frontView && backView) {
-                    frontView.classList.remove('hidden');
-                    backView.classList.add('hidden');
-                }
-                updateSelectedPartsDisplay();
-                populateSymptoms();
-            }
-
-            function flipBodyMap() {
-                // 'front-view'와 'back-view'를 찾아서 뒤집어야 합니다.
-                // SVG를 생략했으므로, 이 부분은 실제 SVG 코드에 맞게 동작해야 합니다.
-                const frontView = document.getElementById('front-view');
-                const backView = document.getElementById('back-view');
-                if (frontView && backView) {
-                    isFront = !isFront;
-                    frontView.classList.toggle('hidden');
-                    backView.classList.toggle('hidden');
-                }
-            }
-
-            backToStep1Btn.addEventListener('click', () => {
-                showStep(steps.gender); // 1단계(성별 선택)로 이동
-            });
-
-            backToStep2Btn.addEventListener('click', () => {
-                showStep(steps.combined); // 2단계(증상 선택)로 이동
-            });
+      document.querySelectorAll('.gender-btn').forEach(button => {
+        button.addEventListener('click', () => {
+          userSelections.gender = button.dataset.gender;
+          showStep(steps.combined);
         });
-    </script>
+      });
+
+      setupSvgEventListeners();
+
+      document.getElementById('to-step4-btn').addEventListener('click', handleSymptomSubmission);
+      document.getElementById('get-result-btn').addEventListener('click', handleConditionSubmission);
+      document.getElementById('restart-btn').addEventListener('click', restart);
+      flipBtn.addEventListener('click', flipBodyMap);
+
+      document.querySelectorAll('.condition-btn').forEach(button => {
+        button.addEventListener('click', () => button.classList.toggle('selected'));
+      });
+
+      function showStep(stepToShow) {
+        Object.values(steps).forEach(step => step.classList.add('hidden'));
+        stepToShow.classList.remove('hidden');
+
+        if (stepToShow === steps.combined) {
+          leftPanel.classList.remove('hidden');
+          leftPanel.classList.remove('disabled');
+        } else if (stepToShow === steps.conditions) {
+          leftPanel.classList.remove('hidden');
+          leftPanel.classList.add('disabled');
+        } else {
+          leftPanel.classList.add('hidden');
+        }
+      }
+
+      function setupSvgEventListeners() {
+        const allPaths = bodySvg.querySelectorAll('.layers[data-name]');
+        const tooltip = document.getElementById('body-part-tooltip');
+
+        allPaths.forEach((path, index) => {
+          const uniqueId = `part-${index}`;
+          path.dataset.uniqueId = uniqueId;
+
+          path.addEventListener('mouseover', (e) => {
+            tooltip.textContent = e.currentTarget.dataset.name;
+            tooltip.style.display = 'block';
+          });
+          path.addEventListener('mouseout', () => {
+            tooltip.style.display = 'none';
+          });
+          path.addEventListener('mousemove', (e) => {
+            tooltip.style.left = `${e.pageX + 10}px`;
+            tooltip.style.top = `${e.pageY}px`;
+          });
+
+          path.addEventListener('click', (e) => {
+            const partElement = e.currentTarget;
+            const partName = partElement.dataset.name;
+            const partId = partElement.dataset.uniqueId;
+            const groupElement = partElement.closest('.head, .torso, .neck, .arm-right, .arm-left, .leg-right, .leg-left');
+            const groupName = partElement.dataset.name;
+
+            partElement.classList.toggle('selected-part');
+
+            const partIndex = userSelections.parts.findIndex(p => p.id === partId);
+
+            if (partIndex > -1) {
+              userSelections.parts.splice(partIndex, 1);
+            } else {
+              userSelections.parts.push({ id: partId, name: partName, group: groupName });
+            }
+
+            updateSelectedPartsDisplay();
+            populateSymptoms();
+          });
+        });
+      }
+
+      function updateSelectedPartsDisplay() {
+        selectedPartsDisplay.innerHTML = '<strong>선택한 부위:</strong> ';
+        if (userSelections.parts.length === 0) {
+          selectedPartsDisplay.innerHTML += '없음';
+        } else {
+          const uniquePartNames = [...new Set(userSelections.parts.map(p => p.name))];
+          uniquePartNames.forEach(name => {
+            const tag = document.createElement('span');
+            tag.className = 'part-tag';
+            tag.textContent = name;
+            selectedPartsDisplay.appendChild(tag);
+          });
+        }
+      }
+
+      function populateSymptoms() {
+        // 1. 함수가 시작될 때, 현재 선택된 증상들을 '이름'으로 기억해 둡니다.
+        const previouslySelectedSymptoms = new Set(
+          Array.from(symptomOptionsContainer.querySelectorAll('.symptom-btn.selected'))
+            .map(btn => btn.dataset.symptom)
+        );
+
+        symptomOptionsContainer.innerHTML = ''; // 기존처럼 일단 화면을 비웁니다.
+        const relevantSymptoms = new Set();
+
+        // 현재 선택된 모든 부위 그룹에서 증상들을 가져와 중복 없이 합칩니다.
+        const selectedGroups = [...new Set(userSelections.parts.map(p => p.group).filter(g => g))];
+
+        if (selectedGroups.length === 0) {
+          symptomOptionsContainer.innerHTML = '<p style="color: #6c757d;">아픈 부위를 선택하면 관련 증상이 나타납니다.</p>';
+          return;
+        }
+
+        selectedGroups.forEach(groupName => {
+          const symptoms = symptomsData[groupName] || [];
+          symptoms.forEach(symptom => relevantSymptoms.add(symptom));
+        });
+
+        // 2. 증상 버튼들을 새로 만듭니다.
+        relevantSymptoms.forEach(symptom => {
+          const button = document.createElement('button');
+          button.className = 'btn symptom-btn';
+          button.dataset.symptom = symptom;
+          button.textContent = symptom;
+
+          // 3. 만약 이 버튼의 이름이 아까 기억해 둔 목록에 있다면, 'selected' 클래스를 다시 추가해줍니다.
+          if (previouslySelectedSymptoms.has(symptom)) {
+            button.classList.add('selected');
+          }
+
+          button.addEventListener('click', () => button.classList.toggle('selected'));
+          symptomOptionsContainer.appendChild(button);
+        });
+      }
+
+      function handleSymptomSubmission() {
+        userSelections.symptoms = Array.from(document.querySelectorAll('.symptom-btn.selected')).map(btn => btn.dataset.symptom);
+        const details = document.getElementById('symptom-details').value;
+        if (details) userSelections.symptoms.push(`(상세: ${details})`);
+        if (userSelections.parts.length > 0 && userSelections.symptoms.length === 0) {
+          alert('증상을 하나 이상 선택해주세요.');
+          return;
+        }
+        showStep(steps.conditions);
+      }
+
+      function handleConditionSubmission() {
+        // 1. 함수가 시작될 때마다 에러 상태를 초기화합니다.
+        conditionTextarea.classList.remove('input-error');
+        conditionErrorMessage.classList.add('hidden'); // ✨ 메시지를 다시 숨기는 코드를 추가합니다.
+        conditionErrorMessage.textContent = '';
+
+        // 2. 입력창의 값을 가져옵니다.
+        const details = conditionTextarea.value;
+
+        // 3. 입력창 내용이 비어있는지 확인합니다.
+        if (!details.trim()) {
+          // (에러 발생 시) 에러 스타일을 적용하고, 메시지를 보여줍니다.
+          conditionTextarea.classList.add('input-error');
+          conditionErrorMessage.textContent = '상세한 상황을 입력해 주세요.(잠자는 자세, 운동할 때 있었던 일 등)';
+          conditionErrorMessage.classList.remove('hidden'); // ✨ 숨김을 해제해서 메시지를 보이게 합니다.
+          return;
+        }
+
+        // 4. (성공 시) 기존 로직을 그대로 수행합니다.
+        userSelections.conditions = Array.from(document.querySelectorAll('.condition-btn.selected')).map(btn => btn.dataset.condition);
+        userSelections.conditions.push(`(상세: ${details})`);
+
+        showStep(steps.result);
+        analyzeAndShowResult();
+      }
+
+      async function analyzeAndShowResult() {
+        // 1. 여기에 위에서 발급받은 본인의 API 키를 붙여넣으세요.
+        const GEMINI_API_KEY = 'AIzaSyCzSzLL6g9h73_jzqRoAmKjG68OpEy5nis';
+        const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_API_KEY}`;
+
+        // 2. AI가 답변을 생성하는 동안 사용자에게 로딩 메시지를 보여줍니다.
+        resultContent.innerHTML = '<p>AI가 분석 중입니다. 잠시만 기다려 주세요...</p>';
+
+        // 3. AI에게 보낼 정보를 보기 쉽게 정리합니다.
+        const { parts, symptoms, gender, conditions } = userSelections;
+        const genderText = gender === 'male' ? '남성' : '여성';
+        const displayParts = [...new Set(parts.map(p => p.name))];
+
+        // 4. Gemini AI에게 보낼 질문(프롬프트)을 상세하게 만듭니다.
+        const prompt = `
+        당신은 사용자의 증상을 듣고 조언해주는 친절한 AI 건강 가이드입니다.
+        아래는 사용자가 입력한 정보입니다.
+
+        - 성별: ${genderText}
+        - 아픈 부위: ${displayParts.join(', ')}
+        - 주요 증상: ${symptoms.join(', ')}
+        - 관련 상황: ${conditions.length > 0 ? conditions.join(', ') : '해당 없음'}
+
+        위 정보를 바탕으로, 일반적인 관점에서 예상 가능한 원인과 생활 속에서 실천할 수 있는 건강 관리 방안 1~2가지를 제시해주세요.
+        주의: 절대로 의학적 진단을 내리면 안됩니다. "의료적 진단이 아니며, 증상이 지속되면 반드시 전문의와 상담해야 합니다."라는 경고 문구를 마지막에 꼭 포함해주세요.
+        답변은 한국어, 그리고 사용자가 이해하기 쉬운 일상적인 표현을 사용해주세요.
+        결과는 <p>와 <strong> 태그만 사용해서 간단한 HTML 형식으로 만들어주세요.
+    `;
+
+        // 5. try...catch 구문으로 API 요청 중 발생할 수 있는 에러를 처리합니다.
+        try {
+          // 6. fetch를 사용해 Gemini API에 요청을 보냅니다.
+          const response = await fetch(GEMINI_API_URL, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              contents: [{
+                parts: [{
+                  text: prompt
+                }]
+              }]
+            })
+          });
+
+          if (!response.ok) {
+            // API 요청이 실패하면 에러 메시지를 표시합니다.
+            throw new Error(`API 요청 실패: ${response.status}`);
+          }
+
+          const data = await response.json();
+
+          // 7. AI가 생성한 답변 텍스트를 추출해서 화면에 표시합니다.
+          const aiResponse = data.candidates[0].content.parts[0].text;
+          resultContent.innerHTML = aiResponse;
+
+        } catch (error) {
+          // 8. 에러가 발생했을 때 사용자에게 알려줍니다.
+          console.error('Gemini API 호출 중 에러 발생:', error);
+          resultContent.innerHTML = '<p>AI 분석 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.</p>';
+        }
+      }
+
+      function restart() {
+        userSelections = { gender: null, parts: [], symptoms: [], conditions: [] };
+        document.querySelectorAll('.btn.selected, .layers.selected-part').forEach(el => el.classList.remove('selected', 'selected-part'));
+        document.getElementById('symptom-details').value = '';
+        document.getElementById('condition-details').value = '';
+
+        showStep(steps.gender);
+        isFront = true;
+        // 'front-view'와 'back-view'를 찾아서 초기화해야 합니다.
+        // SVG를 생략했으므로, 이 부분은 실제 SVG 코드에 맞게 동작해야 합니다.
+        const frontView = document.getElementById('front-view');
+        const backView = document.getElementById('back-view');
+        if (frontView && backView) {
+          frontView.classList.remove('hidden');
+          backView.classList.add('hidden');
+        }
+        updateSelectedPartsDisplay();
+        populateSymptoms();
+      }
+
+      function flipBodyMap() {
+        // 'front-view'와 'back-view'를 찾아서 뒤집어야 합니다.
+        // SVG를 생략했으므로, 이 부분은 실제 SVG 코드에 맞게 동작해야 합니다.
+        const frontView = document.getElementById('front-view');
+        const backView = document.getElementById('back-view');
+        if (frontView && backView) {
+          isFront = !isFront;
+          frontView.classList.toggle('hidden');
+          backView.classList.toggle('hidden');
+        }
+      }
+
+      backToStep1Btn.addEventListener('click', () => {
+        showStep(steps.gender); // 1단계(성별 선택)로 이동
+      });
+
+      backToStep2Btn.addEventListener('click', () => {
+        showStep(steps.combined); // 2단계(증상 선택)로 이동
+      });
+    });
+  </script>
 </body>
 
 </html>
