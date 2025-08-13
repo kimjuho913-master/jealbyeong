@@ -66,29 +66,95 @@ def load_data():
 
 
 def show_visualizations():
+    """데이터를 분석하고 다양한 그래프로 시각화하여 보여줍니다."""
     df = load_data()
     if df is None or df.empty:
         console.print("[yellow]분석할 데이터가 충분하지 않습니다.[/yellow]")
         return
 
     console.print(Rule("[bold cyan]통계 시각화[/bold cyan]"))
-    choice = Prompt.ask(
-        "보고 싶은 시각화 자료를 선택하세요",
-        choices=['1', '2'],
-        default='1'
-    )
-
+    console.print("1. 과목별 공부 시간 (대화형 원형 그래프)")
+    console.print("2. 날짜별 총 공부 시간 및 집중도 변화 (막대+선 그래프)")
+    
+    choice = Prompt.ask("보고 싶은 시각화 자료를 선택하세요", choices=['1','2'], default='1')
+    
     if choice == '1':
-        df_recent_7days = df[df['날짜'] >= (datetime.now() - timedelta(days=7))]
-        if df_recent_7days.empty:
-            console.print("[yellow]최근 7일간의 데이터가 없습니다.[/yellow]")
+        df['대분류'] = df['과목'].map(SUBJECT_TO_CATEGORY_MAP)
+        df.dropna(subset=['대분류'], inplace=True)
+        
+        if df.empty:
+            console.print("[yellow]분석할 데이터가 없습니다.[/yellow]")
             return
-        subject_time = df_recent_7days.groupby('과목')['공부 시간(분)'].sum()
-        plt.figure(figsize=(8, 8))
-        plt.pie(subject_time, labels=subject_time.index, autopct='%1.1f%%', startangle=140, textprops={'fontsize': 12})
-        plt.title('최근 7일간 과목별 공부 시간 비중', fontsize=16)
-        plt.show()
+            
+        # --- ## 여기가 핵심 변경 부분입니다 (부모 노드 Hover 정보 변경) ## ---
+        
+        # 1. 세부 과목(잎사귀) 데이터 준비 (+ 공부 내용)
+        df_leaves = df.groupby(['대분류', '과목']).agg(
+            total_time=('공부 시간(분)', 'sum'),
+            contents=('공부 내용', lambda x: '<br>- '.join(x.dropna().unique()))
+        ).reset_index()
 
+        # 2. 대분류(가지) 데이터 준비 (+ 세부 과목 목록)
+        df_parents_agg = df.groupby('대분류').agg(
+            total_time=('공부 시간(분)', 'sum'),
+            # 기록된 세부 과목 목록을 중복 없이 가져와서 HTML 줄바꿈 태그로 연결
+            subject_list=('과목', lambda x: '<br>- '.join(sorted(x.unique())))
+        ).reset_index()
+        
+        # 3. 최종 데이터 및 hovertext 리스트 생성
+        ids = []
+        labels = []
+        parents = []
+        values = []
+        hovertexts = []
+
+        # (a) 부모 노드(대분류) 데이터 추가
+        for index, row in df_parents_agg.iterrows():
+            ids.append(row['대분류'])
+            labels.append(row['대분류'])
+            parents.append("")
+            values.append(row['total_time'])
+            # 부모 노드 hovertext에 '기록된 세부 과목' 목록 추가
+            hovertexts.append(
+                f"<b>{row['대분류']}</b><br><br>"
+                f"<b>기록된 세부 과목:</b><br>- {row['subject_list']}"
+            )
+
+        # (b) 자식 노드(세부 과목) 데이터 추가
+        for index, row in df_leaves.iterrows():
+            ids.append(f"{row['대분류']}-{row['과목']}")
+            labels.append(row['과목'])
+            parents.append(row['대분류'])
+            values.append(row['total_time'])
+            # 자식 노드 hovertext에는 '구체적인 공부 내용'을 표시
+            hovertexts.append(f"<b>{row['과목']}</b><br><br><b>총 공부 시간:</b> {row['total_time']:.0f}분<br><br><b>공부 내용:</b><br>- {row['contents']}")
+
+        fig = go.Figure(go.Sunburst(
+            ids=ids,
+            labels=labels,
+            parents=parents,
+            values=values,
+            insidetextorientation='radial',
+            hovertext=hovertexts,
+            hoverinfo='text'
+        ))
+        # --- ## 수정 끝 ## ---
+        
+        fig.update_layout(
+            margin=dict(t=40, l=20, r=20, b=20),
+            title_text="과목별 공부 시간 분포 (클릭하여 세부 항목 보기)",
+            title_x=0.5
+        )
+        
+        chart_filename = "study_chart.html"
+        fig.write_html(chart_filename, include_plotlyjs='inline')
+        try:
+            webbrowser.open_new_tab(chart_filename)
+            console.print(f"\n[green]'{chart_filename}' 이름으로 그래프를 저장하고, 웹 브라우저에 표시했습니다.[/green]")
+        except webbrowser.Error:
+            console.print(f"\n[yellow]웹 브라우저를 자동으로 여는 데 실패했습니다.[/yellow]")
+            console.print(f"[yellow]프로젝트 폴더에 저장된 '{chart_filename}' 파일을 직접 열어 확인해주세요.[/yellow]")
+        
     elif choice == '2':
         daily_stats = df.groupby('날짜').agg(total_time=('공부 시간(분)', 'sum'), avg_concentration=('집중도', 'mean')).sort_index()
         fig, ax1 = plt.subplots(figsize=(12, 6))
