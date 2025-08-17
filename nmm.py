@@ -329,6 +329,133 @@ def show_visualizations():
         plt.show()
 
 
+def generate_feedback():
+    df = load_data()
+    if df is None or len(df) < 3:
+        console.print(
+            Panel(
+                "[yellow]피드백을 생성하기에 데이터가 부족합니다.\n최소 3개 이상의 기록을 추가해주세요.[/yellow]",
+                title="[bold]학습 피드백[/bold]",
+                border_style="yellow",
+            )
+        )
+        return
+    console.print(Rule("[bold cyan]학습 피드백 시스템[/bold cyan]"))
+    table = Table(
+        title="[bold]나의 학습 습관 분석 결과[/bold]",
+        show_header=True,
+        header_style="bold magenta",
+    )
+    table.add_column("분석 항목", style="cyan", width=20)
+    table.add_column("결과 및 조언")
+    avg_concentration_by_subject = df.groupby("과목")["집중도"].mean().sort_values()
+    if (
+        not avg_concentration_by_subject.empty
+        and avg_concentration_by_subject.iloc[0] < 3
+    ):
+        lowest_conc_subj = avg_concentration_by_subject.index[0]
+        lowest_conc_val = avg_concentration_by_subject.iloc[0]
+        table.add_row(
+            "⚠️ 집중도 취약 과목",
+            f"과목 '[bold yellow]{lowest_conc_subj}[/bold yellow]'의 평균 집중도({lowest_conc_val:.1f})가 낮습니다.\n[italic]→ 기초 개념을 복습하거나, 학습 환경을 바꿔보세요.[/italic]",
+        )
+    total_study_time = df["공부 시간(분)"].sum()
+    if total_study_time > 0:
+        subject_proportion = (
+            df.groupby("과목")["공부 시간(분)"].sum() / total_study_time
+        ) * 100
+        imbalanced_subjects = subject_proportion[subject_proportion < 10]
+        if not imbalanced_subjects.empty:
+            subjects_str = ", ".join(
+                [f"'[bold yellow]{s}[/bold yellow]'" for s in imbalanced_subjects.index]
+            )
+            table.add_row(
+                "📊 과목 불균형",
+                f"과목 {subjects_str}의 학습 비중이 전체의 10% 미만입니다.\n[italic]→ 장기적인 성장을 위해 균형 있는 학습 계획이 필요합니다.[/italic]",
+            )
+    df["효율성 점수"] = df["집중도"] * df["공부 시간(분)"]
+    efficiency_by_subject = (
+        df.groupby("과목")["효율성 점수"].mean().sort_values(ascending=False)
+    )
+    if not efficiency_by_subject.empty:
+        most_efficient_subject = efficiency_by_subject.index[0]
+        table.add_row(
+            "💡 최고 효율 과목",
+            f"과목 '[bold green]{most_efficient_subject}[/bold green]'를 공부할 때 가장 높은 효율을 보입니다.\n[italic]→ 이 과목을 공부할 때의 성공 요인(시간, 장소, 방법 등)을 다른 과목에도 적용해보세요.[/italic]",
+        )
+    if table.row_count == 0:
+        console.print(
+            Panel(
+                "[green]축하합니다! 현재 매우 균형 잡힌 학습을 하고 있습니다. 계속 유지해주세요![/green]",
+                title="[bold]종합 분석[/bold]",
+                border_style="green",
+            )
+        )
+    else:
+        console.print(table)
+
+
+def set_weekly_goal():
+    console.print(Rule("[bold cyan]주간 목표 설정[/bold cyan]"))
+    goal_hours = FloatPrompt.ask("- 이번 주 목표 공부 시간을 입력하세요 (시간 단위)")
+    today = datetime.now().date()
+    start_of_week = today - timedelta(days=today.weekday())
+    new_goal = {
+        "주 시작일": [start_of_week.strftime("%Y-%m-%d")],
+        "목표 시간(시간)": [goal_hours],
+    }
+    df_new_goal = pd.DataFrame(new_goal)
+    if not os.path.exists(GOAL_FILE):
+        df_new_goal.to_csv(GOAL_FILE, index=False, encoding="utf-8-sig")
+    else:
+        df_goals = pd.read_csv(GOAL_FILE, encoding="utf-8-sig")
+        df_goals = df_goals[df_goals["주 시작일"] != start_of_week.strftime("%Y-%m-%d")]
+        df_goals = pd.concat([df_goals, df_new_goal], ignore_index=True)
+        df_goals.to_csv(GOAL_FILE, index=False, encoding="utf-8-sig")
+    console.print(
+        f"[bold green]✅ 이번 주 목표({goal_hours}시간)가 설정되었습니다.[/bold green]"
+    )
+
+
+def check_goal_achievement():
+    console.print(Rule("[bold cyan]주간 목표 달성률 확인[/bold cyan]"))
+    df_study = load_data()
+    if not os.path.exists(GOAL_FILE):
+        console.print(
+            "[yellow]설정된 목표가 없습니다. 먼저 주간 목표를 설정해주세요.[/yellow]"
+        )
+        return
+    df_goals = pd.read_csv(GOAL_FILE, encoding="utf-8-sig")
+    df_goals["주 시작일"] = pd.to_datetime(df_goals["주 시작일"])
+    today = datetime.now()
+    start_of_week = today - timedelta(days=today.weekday())
+    current_goal = df_goals[df_goals["주 시작일"].dt.date == start_of_week.date()]
+    if current_goal.empty:
+        console.print("[yellow]이번 주 목표가 설정되지 않았습니다.[/yellow]")
+        return
+    goal_hours = current_goal["목표 시간(시간)"].iloc[0]
+    study_minutes_this_week = 0
+    if df_study is not None:
+        this_week_data = df_study[df_study["날짜"] >= start_of_week]
+        study_minutes_this_week = this_week_data["공부 시간(분)"].sum()
+    study_hours_this_week = study_minutes_this_week / 60
+    achievement_rate = (
+        (study_hours_this_week / goal_hours) * 100 if goal_hours > 0 else 0
+    )
+    table = Table(show_header=False, box=None, padding=0)
+    table.add_column(width=20)
+    table.add_column()
+    table.add_row("🎯 이번 주 목표", f"[bold cyan]{goal_hours:.1f}[/bold cyan] 시간")
+    table.add_row(
+        "📖 현재 공부 시간",
+        f"[bold green]{study_hours_this_week:.1f}[/bold green] 시간",
+    )
+    console.print(table)
+    console.print("\n[bold]🏆 달성률: {:.2f} %[/bold]".format(achievement_rate))
+    progress = ProgressBar(total=100, completed=min(achievement_rate, 100), width=50)
+    console.print(progress)
+
+
 def delete_study_record():
     console.print(Rule("[bold red]학습 기록 삭제[/bold red]"))
     df = load_data()
